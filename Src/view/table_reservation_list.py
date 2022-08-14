@@ -1,6 +1,7 @@
 import tkinter as tk
 
 from tkinter import *
+from tkinter import messagebox
 from tkinter.ttk import *
   
 from model.customer import Customer
@@ -8,11 +9,27 @@ from model.table_reservation import TableReservation
 from view.helper.comp_helper import ComponentHelper
 from view.table_reservation_create import TableReservationCreate
 from database.db import Database
+from view.event import Event
 
 class TableReservationList():
+    tv = Treeview
+    win = object
+
     def __init__(self, win):
         print('table list constructor')
-        self.createWidgets(win)
+        self.tbl_reservation_create = TableReservationCreate(win)
+        self.tbl_reservation_create.AddSubscribersForViewUpdatedEvent(self.table_reservation_created)
+        self.OnViewUpdated = Event()
+        self.win = win
+
+    def ViewUpdated(self):
+        self.OnViewUpdated()
+         
+    def AddSubscribersForViewUpdatedEvent(self,objMethod):
+        self.OnViewUpdated += objMethod
+         
+    def RemoveSubscribersForViewUpdatedEvent(self,objMethod):
+        self.OnViewUpdated -= objMethod
 
     def createWidgets(self, win):
         top=win.winfo_toplevel()
@@ -32,36 +49,86 @@ class TableReservationList():
         for data in reserv_list:
             self.AddItem(tv, data)
 
+    def table_reservation_created(self):
+        self.ViewUpdated()
+        print('order created')
+
     def table_reservation_create(self, win):
         helper = ComponentHelper()
         helper.remove_all_widgets(win)
         win.geometry("550x200")
-        reserv = TableReservation() #populate this object when opening in edit mode
-        reserv_create = TableReservationCreate(win, reserv)
+        #reserv = TableReservation() #populate this object when opening in edit mode
+        #reserv_create = TableReservationCreate(win, reserv)
+        self.tbl_reservation_create.createWidgets(win)
                 
     def AddItem(self, tv, reserv=TableReservation):
         tv.insert("", 'end', iid=None, text=reserv.reservation_id, values=(reserv.table_number, reserv.pax, reserv.datetime, reserv.customer))
+
+    def edit(self):
+        print("Edit", self.popup.selection)
+
+        helper = ComponentHelper()
+        helper.remove_all_widgets(self.win)
+        self.win.geometry("400x200")
+        row = self.popup.row
+        id = self.tv.item(row)['text']
+        self.tbl_reservation_create.createWidgets(self.win, id)
+        
+    def delete(self):        
+        row = self.popup.row
+        id = self.tv.item(row)['text']
+        db = Database()
+        db.table_reservation_delete(id)
+        
+        try:
+            selected_item = self.tv.selection()[0]    
+            self.tv.delete(selected_item)
+        except:
+            messagebox.showerror('Failure!', 'Please select an Item before Deleting!')
+            return
+        
+        messagebox.showinfo('Success!', 'Deleted Successfully')
+        print("Delete", self.popup.selection)
+
+    def do_popup(self, event):
+        # display the popup menu
+        try:
+            self.popup.selection = self.treeview.set(self.treeview.identify_row(event.y))
+            self.popup.row = self.treeview.identify_row(event.y)
+            self.popup.post(event.x_root, event.y_root)
+        finally:
+            # make sure to release the grab (Tk 8.0a1 only)
+            self.popup.grab_release()    
         
     def CreateUI(self, win):
-        tv = Treeview(win)
-        tv['columns'] = ('Table Number', 'Pax', 'DateTime', 'Customer')
-        
-        tv.heading("#0", text='#', anchor='w')
-        tv.column("#0", anchor="w", width=25)
+        self.tv = Treeview(win)
 
-        tv.heading('Table Number', text='Table Number')
-        tv.column('Table Number', anchor='center', width=100)
+        #Create menu
+        self.popup = tk.Menu(win, tearoff=0)
+        self.popup.add_command(label="Edit", command=self.edit)
+        self.popup.add_separator()
+        self.popup.add_command(label="Delete", command=self.delete)        
 
-        tv.heading('Pax', text='Pax')
-        tv.column('Pax', anchor='center', width=100)
+        self.tv.bind("<Button-3>", self.do_popup)        
         
-        tv.heading('DateTime', text='DateTime')
-        tv.column('DateTime', anchor='center', width=150)
+        self.tv['columns'] = ('Table Number', 'Pax', 'DateTime', 'Customer')
         
-        tv.heading('Customer', text='Customer')
-        tv.column('Customer', anchor='center', width=100)
+        self.tv.heading("#0", text='#', anchor='w')
+        self.tv.column("#0", anchor="w", width=25)
 
-        tv.grid(row=8, column=1, sticky = (N,S,W,E))
-        self.treeview = tv
+        self.tv.heading('Table Number', text='Table Number')
+        self.tv.column('Table Number', anchor='center', width=100)
+
+        self.tv.heading('Pax', text='Pax')
+        self.tv.column('Pax', anchor='center', width=100)
         
-        return tv
+        self.tv.heading('DateTime', text='DateTime')
+        self.tv.column('DateTime', anchor='center', width=150)
+        
+        self.tv.heading('Customer', text='Customer')
+        self.tv.column('Customer', anchor='center', width=100)
+
+        self.tv.grid(row=8, column=1, sticky = (N,S,W,E))
+        self.treeview = self.tv
+        
+        return self.tv

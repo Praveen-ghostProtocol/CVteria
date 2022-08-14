@@ -28,11 +28,11 @@ CREATE TABLE menu(
     item VARCHAR(255),
     price FLOAT,
     image VARCHAR(255),
-    size_id INT, INDEX size_id (size_id),CONSTRAINT fk_size_id FOREIGN KEY (size_id) REFERENCES size(size_id) ON DELETE CASCADE ON UPDATE CASCADE  ,
+    size_id INT, INDEX size_id (size_id),CONSTRAINT fk_size_id FOREIGN KEY (size_id) REFERENCES size(size_id),
     description VARCHAR(255),
     spice_lvl INT,
     is_veg BOOLEAN,
-    category_id INT, INDEX category_id (category_id),CONSTRAINT fk_category_id FOREIGN KEY (category_id) REFERENCES category(category_id) ON DELETE CASCADE ON UPDATE CASCADE
+    category_id INT, INDEX category_id (category_id),CONSTRAINT fk_category_id FOREIGN KEY (category_id) REFERENCES category(category_id)
 );
 
 CREATE TABLE cafe_table(  
@@ -62,32 +62,37 @@ CREATE TABLE reservation(
     update_time DATETIME COMMENT 'Update Time',
     no_of_seats INT,
     date_time DATETIME,
-    customer_id INT, INDEX customer_id (customer_id),CONSTRAINT fk_customer_id FOREIGN KEY (customer_id) REFERENCES customer(customer_id) ON DELETE CASCADE ON UPDATE CASCADE,
-    cafe_table_id INT, INDEX cafe_table_id (cafe_table_id),CONSTRAINT fk_cafe_table_id FOREIGN KEY (cafe_table_id) REFERENCES cafe_table(cafe_table_id) ON DELETE CASCADE ON UPDATE CASCADE
+    customer_id INT, INDEX customer_id (customer_id),CONSTRAINT fk_customer_id FOREIGN KEY (customer_id) REFERENCES customer(customer_id),
+    cafe_table_id INT, INDEX cafe_table_id (cafe_table_id),CONSTRAINT fk_cafe_table_id FOREIGN KEY (cafe_table_id) REFERENCES cafe_table(cafe_table_id)
 );
 
-CREATE TABLE cafe_order(  
-    cafe_order_id int NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Primary Key',
+CREATE TABLE cafe_order_header(  
+    cafe_order_header_id int NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Primary Key',
     create_time DATETIME COMMENT 'Create Time',
     update_time DATETIME COMMENT 'Update Time',
-    menu_id INT, INDEX menu_id(menu_id),CONSTRAINT fk_cafe_order_menu_id FOREIGN KEY (menu_id) REFERENCES menu(menu_id) ON DELETE CASCADE ON UPDATE CASCADE,
-    cafe_table_id INT, INDEX cafe_table_id(cafe_table_id),CONSTRAINT fk_cafe_order_cafe_table_id FOREIGN KEY (cafe_table_id) REFERENCES cafe_table(cafe_table_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    cafe_table_id INT, INDEX cafe_table_id(cafe_table_id),CONSTRAINT fk_cafe_order_cafe_table_id FOREIGN KEY (cafe_table_id) REFERENCES cafe_table(cafe_table_id),
+    total_amount FLOAT
+);
+
+CREATE TABLE cafe_order_detail(  
+    cafe_order_detail_id int NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Primary Key',
+    cafe_order_header_id INT, INDEX cafe_order_header_id(cafe_order_header_id),CONSTRAINT fk_cafe_order_header_id FOREIGN KEY (cafe_order_header_id) REFERENCES cafe_order_header(cafe_order_header_id),
+    create_time DATETIME COMMENT 'Create Time',
+    update_time DATETIME COMMENT 'Update Time',
+    menu_id INT, INDEX menu_id(menu_id),CONSTRAINT fk_cafe_order_menu_id FOREIGN KEY (menu_id) REFERENCES menu(menu_id),
     qty INT,
     unit_price float,
     gst float,
-    total_price FLOAT
+    amount FLOAT
 );
 
 CREATE TABLE bill(  
     bill_id int NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Primary Key',
+    cafe_order_header_id INT, INDEX cafe_order_header_id(cafe_order_header_id),CONSTRAINT fk_cafe_order_header_id FOREIGN KEY (cafe_order_header_id) REFERENCES cafe_order_header(cafe_order_header_id),
     create_time DATETIME COMMENT 'Create Time',
     update_time DATETIME COMMENT 'Update Time',
-    cafe_table_id INT, INDEX cafe_table_id(cafe_table_id),CONSTRAINT fk_bill_cafe_table_id FOREIGN KEY (cafe_table_id) REFERENCES cafe_table(cafe_table_id) ON DELETE CASCADE ON UPDATE CASCADE,
-    total_price FLOAT,
-    discount FLOAT,
-    cafe_order_id INT, INDEX cafe_order_id (cafe_order_id),CONSTRAINT fk_cafe_order_id FOREIGN KEY (cafe_order_id) REFERENCES cafe_order(cafe_order_id) ON DELETE CASCADE ON UPDATE CASCADE,
-    customer_id INT, INDEX customer_id (customer_id),CONSTRAINT fk_bill_customer_id FOREIGN KEY (customer_id) REFERENCES customer(customer_id) ON DELETE CASCADE ON UPDATE CASCADE,
-    payment_mode_id INT, INDEX payment_mode_id (payment_mode_id),CONSTRAINT fk_payment_mode_id FOREIGN KEY (payment_mode_id) REFERENCES payment_mode(payment_mode_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    customer_id INT, INDEX customer_id (customer_id),CONSTRAINT fk_bill_customer_id FOREIGN KEY (customer_id) REFERENCES customer(customer_id),
+    payment_mode_id INT, INDEX payment_mode_id (payment_mode_id),CONSTRAINT fk_payment_mode_id FOREIGN KEY (payment_mode_id) REFERENCES payment_mode(payment_mode_id),
     date_time DATETIME
 );
 

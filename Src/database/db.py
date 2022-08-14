@@ -1,7 +1,9 @@
 import mysql.connector as bot
+from model.category import Category
 
 from model.customer import Customer
-from model.order import Order
+from model.order_header import OrderHeader
+from model.order_detail import OrderDetail
 from model.item import Item
 from model.table import Table
 from model.table_reservation import TableReservation
@@ -25,6 +27,191 @@ class Database():
             print('could not connect to DB')     
         return mydb   
     
+    def setup(self):
+        #CREATE DATBASE
+        con = bot.connect(host="localhost",user="root",password="Tiger@123",charset='utf8')
+        cur = con.cursor()        
+        cur.execute("""
+            CREATE DATABASE IF NOT EXISTS cvteria
+            """)
+
+        mydb = self.connect()        
+        mycursor = mydb.cursor()
+        
+        #CREATE TABLES
+        #size
+        mycursor.execute("""
+            CREATE TABLE IF NOT EXISTS
+            size(  
+                size_id int NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Primary Key',
+                create_time DATETIME COMMENT 'Create Time',
+                update_time DATETIME COMMENT 'Update Time',
+                size_name VARCHAR(255)    
+            );                         
+            """)
+
+        #category
+        mycursor.execute("""
+            CREATE TABLE IF NOT EXISTS
+            category(  
+                category_id int NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Primary Key',
+                create_time DATETIME COMMENT 'Create Time',
+                update_time DATETIME COMMENT 'Update Time',
+                category_name VARCHAR(255)    
+            );
+            """)
+        
+        #payment_mode
+        mycursor.execute("""
+            CREATE TABLE IF NOT EXISTS
+            payment_mode(  
+                payment_mode_id int NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Primary Key',
+                create_time DATETIME COMMENT 'Create Time',
+                update_time DATETIME COMMENT 'Update Time',
+                payment_mode_name VARCHAR(255)    
+            );
+            """)
+
+        #menu
+        mycursor.execute("""
+            CREATE TABLE IF NOT EXISTS
+            menu(  
+                menu_id int NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Primary Key',
+                create_time DATETIME COMMENT 'Create Time',
+                update_time DATETIME COMMENT 'Update Time',
+                item VARCHAR(255),
+                price FLOAT,
+                image VARCHAR(255),
+                size_id INT, INDEX size_id (size_id),CONSTRAINT fk_size_id FOREIGN KEY (size_id) REFERENCES size(size_id)   ,
+                description VARCHAR(255),
+                spice_lvl INT,
+                is_veg BOOLEAN,
+                category_id INT, INDEX category_id (category_id),CONSTRAINT fk_category_id FOREIGN KEY (category_id) REFERENCES category(category_id) 
+            );
+            """)
+
+        #cafe_table
+        mycursor.execute("""
+            CREATE TABLE IF NOT EXISTS
+            cafe_table(  
+                cafe_table_id int NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Primary Key',
+                create_time DATETIME COMMENT 'Create Time',
+                update_time DATETIME COMMENT 'Update Time',
+                no_of_seats INT,
+                cafe_table_number VARCHAR(255),
+                location VARCHAR(255)  
+            );
+            """)
+
+        #customer
+        mycursor.execute("""
+            CREATE TABLE IF NOT EXISTS
+            customer(  
+                customer_id int NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Primary Key',
+                create_time DATETIME COMMENT 'Create Time',
+                update_time DATETIME COMMENT 'Update Time',
+                customer_name VARCHAR(255), 
+                customer_phone_number VARCHAR(255),
+                gender BOOLEAN,
+                email_id VARCHAR(255),
+                DOB DATE,
+                DOA DATE
+            );
+            """)
+
+        #reservation
+        mycursor.execute("""
+            CREATE TABLE IF NOT EXISTS
+            reservation(  
+                reservation_id int NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Primary Key',
+                create_time DATETIME COMMENT 'Create Time',
+                update_time DATETIME COMMENT 'Update Time',
+                no_of_seats INT,
+                date_time DATETIME,
+                customer_id INT, INDEX customer_id (customer_id),CONSTRAINT fk_customer_id FOREIGN KEY (customer_id) REFERENCES customer(customer_id) ,
+                cafe_table_id INT, INDEX cafe_table_id (cafe_table_id),CONSTRAINT fk_cafe_table_id FOREIGN KEY (cafe_table_id) REFERENCES cafe_table(cafe_table_id) 
+            );
+            """)
+
+        #cafe_order_header
+        mycursor.execute("""
+            CREATE TABLE IF NOT EXISTS
+            cafe_order_header(  
+                cafe_order_header_id int NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Primary Key',
+                create_time DATETIME COMMENT 'Create Time',
+                update_time DATETIME COMMENT 'Update Time',
+                cafe_table_id INT, INDEX cafe_table_id(cafe_table_id),CONSTRAINT fk_cafe_order_header_cafe_table_id FOREIGN KEY (cafe_table_id) REFERENCES cafe_table(cafe_table_id) ,
+                total_amount FLOAT
+            );
+            """)
+
+        #cafe_order_detail
+        mycursor.execute("""
+            CREATE TABLE IF NOT EXISTS
+            cafe_order_detail(  
+                cafe_order_detail_id int NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Primary Key',
+                cafe_order_header_id INT, INDEX cafe_order_header_id(cafe_order_header_id),CONSTRAINT fk_cafe_order_header_id FOREIGN KEY (cafe_order_header_id) REFERENCES cafe_order_header(cafe_order_header_id) ,
+                create_time DATETIME COMMENT 'Create Time',
+                update_time DATETIME COMMENT 'Update Time',
+                menu_id INT, INDEX menu_id(menu_id),CONSTRAINT fk_cafe_order_detail_menu_id FOREIGN KEY (menu_id) REFERENCES menu(menu_id) ,
+                qty INT,
+                unit_price float,
+                gst float,
+                amount FLOAT
+            );
+            """)
+
+        #bill
+        mycursor.execute("""
+            CREATE TABLE IF NOT EXISTS
+            bill(  
+                bill_id int NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Primary Key',
+                cafe_order_header_id INT, INDEX cafe_order_header_id(cafe_order_header_id),CONSTRAINT fk_cafe_order_header_id_bill FOREIGN KEY (cafe_order_header_id) REFERENCES cafe_order_header(cafe_order_header_id) ,	
+                create_time DATETIME COMMENT 'Create Time',
+                update_time DATETIME COMMENT 'Update Time',
+                customer_id INT, INDEX customer_id (customer_id),CONSTRAINT fk_bill_customer_id FOREIGN KEY (customer_id) REFERENCES customer(customer_id) ,
+                payment_mode_id INT, INDEX payment_mode_id (payment_mode_id),CONSTRAINT fk_payment_mode_id FOREIGN KEY (payment_mode_id) REFERENCES payment_mode(payment_mode_id) ,
+                date_time DATETIME
+            );
+            """)
+        mydb.commit()
+            
+    def seed(self):
+        mydb = self.connect()        
+        mycursor = mydb.cursor()
+        #INSERT DEFAULT RECORDS
+        #size
+        mycursor.execute("insert into size(size_name,create_time,update_time) VALUES('Demi',now(),now());")
+        mycursor.execute("insert into size(size_name,create_time,update_time) VALUES('Short',now(),now());")
+        mycursor.execute("insert into size(size_name,create_time,update_time) VALUES('Tall',now(),now());")
+        mycursor.execute("insert into size(size_name,create_time,update_time) VALUES('Venti',now(),now());")
+        mycursor.execute("insert into size(size_name,create_time,update_time) VALUES('Grande',now(),now());")
+        mycursor.execute("insert into size(size_name,create_time,update_time) VALUES('Trenta',now(),now());")
+        
+        mydb.commit()
+        
+        #category
+        mycursor.execute("insert into category(category_name,create_time,update_time) VALUES('Starters',now(),now());")
+        mycursor.execute("insert into category(category_name,create_time,update_time) VALUES('Main Course',now(),now());")
+        mydb.commit()
+        
+        #payment_mode
+        mycursor.execute("insert into payment_mode(payment_mode_name,create_time,update_time) VALUES('Cash',now(),now());")
+        mycursor.execute("insert into payment_mode(payment_mode_name,create_time,update_time) VALUES('Card',now(),now());")
+        mycursor.execute("insert into payment_mode(payment_mode_name,create_time,update_time) VALUES('UPI',now(),now());")
+        mydb.commit()
+
+        #menu
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Idli', 50, null, 'Idli or idly is a type of savoury rice cake', 0, True, 1, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Dosa', 100, null, null, 1, True, 1, now(),now());            ")
+        mydb.commit()
+
+        #cafe_table
+        mycursor.execute("insert into cafe_table(cafe_table_number, no_of_seats, location, create_time,update_time) VALUES('Table 01', 2, '1st Floor, North East', now(),now());")
+        mycursor.execute("insert into cafe_table(cafe_table_number, no_of_seats, location, create_time,update_time) VALUES('Table 02', 4, '1st Floor, South', now(),now());")
+        mycursor.execute("insert into cafe_table(cafe_table_number, no_of_seats, location, create_time,update_time) VALUES('Table 03', 6, '1st Floor, Center', now(),now());")
+        mydb.commit()
+            
     def customer_create(self, cust=Customer): 
         mydb = self.connect()        
         mycursor = mydb.cursor()
@@ -37,22 +224,54 @@ class Database():
         mydb.commit()
         print('customer created ')
 
-    def order_create(self, ord=Order): 
+    def customer_update(self, cust=Customer): 
         mydb = self.connect()        
         mycursor = mydb.cursor()
-
-        sql = "insert into cafe_order(menu_id,cafe_table_id, qty, unit_price, gst, total_price, create_time,update_time) VALUES (%s, %s, %s, %s, %s, %s, now(), now())"
-        val = (ord.item_id, ord.table_id, ord.qty, ord.price, ord.gst, ord.total_price)
+        
+        sql = "update customer set customer_name=%s,customer_phone_number=%s, gender=%s, email_id=%s, DOB=%s, DOA=%s, update_time=now() where customer_id=%s"
+        val = (cust.customer_name, cust.phone_number, cust.gender, cust.email_id, cust.DOB, cust.anniversary_date, cust.customer_id)
         
         mycursor.execute(sql, val)
-        
+
         mydb.commit()
-        print('Order created ')
+        print('customer updated')
+
+    def customer_delete(self, customer_id): 
+        mydb = self.connect()        
+        mycursor = mydb.cursor()
+        
+        sql = "delete from customer where customer_id=" + str(customer_id)
+        
+        mycursor.execute(sql)
+
+        mydb.commit()
+        print('customer updated')
 
     def customer_get_all(self): 
         mydb = self.connect()
         mycursor = mydb.cursor()
-        mycursor.execute("select customer_id, customer_name,customer_phone_number, gender, email_id, DOB, DOA, create_time,update_time from customer")
+        mycursor.execute("select customer_id, customer_name,customer_phone_number, gender, email_id, DOB, DOA, create_time,update_time from customer order by customer_id desc")
+        
+        list_of_customer = mycursor.fetchall()
+        cust_list = []
+        for data in list_of_customer:
+            cust = Customer()
+            cust.customer_id = data[0]
+            cust.customer_name = data[1]
+            cust.phone_number = data[2]
+            cust.gender = data[3]
+            cust.email_id = data[4]
+            cust.DOB = data[5]
+            cust.anniversary_date = data[6]
+            cust_list.append(cust)
+            print(f"|{cust.customer_id:4}")
+        
+        return cust_list
+
+    def customer_get_by_id(self, customer_id): 
+        mydb = self.connect()
+        mycursor = mydb.cursor()
+        mycursor.execute("select customer_id, customer_name,customer_phone_number, gender, email_id, DOB, DOA, create_time,update_time from customer where customer_id=" + str(customer_id))
         
         list_of_customer = mycursor.fetchall()
         cust_list = []
@@ -70,30 +289,186 @@ class Database():
         
         return cust_list
         
-    def order_get_all(self): 
+    def order_header_create(self, ord=OrderHeader): 
+        mydb = self.connect()        
+        mycursor = mydb.cursor()
+
+        sql = "insert into cafe_order_header(cafe_table_id, total_amount, create_time,update_time) VALUES (%s, %s, now(), now())"
+        val = (ord.table_id, ord.total_amount)
+        
+        mycursor.execute(sql, val)
+        
+        mydb.commit()
+        print('Order created ')
+        return mycursor.lastrowid
+
+    def order_header_update(self, ord=OrderHeader): 
+        mydb = self.connect()        
+        mycursor = mydb.cursor()
+
+        sql = "update cafe_order_header set total_amount = %s, update_time=now() where cafe_order_header_id=%s"
+        val = (ord.total_amount, ord.order_header_id)
+        
+        mycursor.execute(sql, val)
+        
+        mydb.commit()
+        print('Order updated')
+        return mycursor.lastrowid
+
+    def order_detail_update(self, ord=OrderDetail): 
+        mydb = self.connect()        
+        mycursor = mydb.cursor()
+
+        sql = "update cafe_order_detail set menu_id=%s, qty=%s, unit_price=%s, gst=%s, amount=%s, update_time=now() where cafe_order_detail_id = %s"
+        val = (ord.item_id, ord.qty, ord.price, ord.gst, ord.amount, ord.order_detail_id)
+        
+        mycursor.execute(sql, val)
+        
+        mydb.commit()
+        print('Order detail updated')
+
+    def order_detail_create(self, ord=OrderDetail): 
+        mydb = self.connect()        
+        mycursor = mydb.cursor()
+
+        sql = "insert into cafe_order_detail(cafe_order_header_id, menu_id, qty, unit_price, gst, amount, create_time,update_time) VALUES (%s, %s, %s, %s, %s, %s, now(), now())"
+        val = (ord.order_header_id, ord.item_id, ord.qty, ord.price, ord.gst, ord.amount)
+        
+        mycursor.execute(sql, val)
+        
+        mydb.commit()
+        print('Order created ')
+
+    def order_header_get_all(self): 
         mydb = self.connect()
         mycursor = mydb.cursor()
-        mycursor.execute("select cafe_order_id, c.menu_id, item, c.cafe_table_id, cafe_table_number, qty, unit_price, gst, total_price, c.create_time from cafe_order c inner join menu m on c.menu_id = m.menu_id inner join cafe_table  t on c.cafe_table_id = t.cafe_table_id order by cafe_order_id")
+        mycursor.execute("select cafe_order_header_id, c.cafe_table_id, cafe_table_number, total_amount, c.create_time from cafe_order_header c inner join cafe_table  t on c.cafe_table_id = t.cafe_table_id order by cafe_order_header_id desc")
         
         list = mycursor.fetchall()
         output_list = []
         for data in list:
-            ord = Order()
-            ord.order_id = data[0]
-            ord.item_id = data[1]
-            ord.item = data[2]
-            ord.table_id = data[3]
-            ord.table_number = data[4]
-            ord.qty = data[5]
-            ord.price = data[6]
-            ord.gst = data[7]
-            ord.total_price = data[8]
-            ord.create_time = data[9]
+            ord = OrderHeader()
+            ord.order_header_id = data[0]
+            ord.table_id = data[1]
+            ord.table_number = data[2]
+            ord.total_amount = data[3]
+            ord.create_time = data[4]
             
             output_list.append(ord)
-            print(f"|{ord.order_id:4}")
+            print(f"|{ord.order_header_id:4}")
         
         return output_list
+
+    def order_header_get_upaid(self): 
+        mydb = self.connect()
+        mycursor = mydb.cursor()
+        mycursor.execute("""select c.cafe_order_header_id, c.cafe_table_id, cafe_table_number, total_amount, c.create_time 
+                from cafe_order_header c 
+                left outer join bill b on c.cafe_order_header_id = b.cafe_order_header_id
+                inner join cafe_table  t on c.cafe_table_id = t.cafe_table_id 
+                where b.bill_id is null
+                order by cafe_order_header_id desc""")
+        
+        list = mycursor.fetchall()
+        output_list = []
+        for data in list:
+            ord = OrderHeader()
+            ord.order_header_id = data[0]
+            ord.table_id = data[1]
+            ord.table_number = data[2]
+            ord.total_amount = data[3]
+            ord.create_time = data[4]
+            
+            output_list.append(ord)
+            print(f"|{ord.order_header_id:4}")
+        
+        return output_list
+
+    def order_header_get_by_id(self, cafe_order_header_id): 
+        mydb = self.connect()
+        mycursor = mydb.cursor()
+
+        sql = "select cafe_order_header_id, c.cafe_table_id, cafe_table_number, total_amount, c.create_time from cafe_order_header c inner join cafe_table  t on c.cafe_table_id = t.cafe_table_id where c.cafe_order_header_id = '" + str(cafe_order_header_id) + "' order by cafe_order_header_id desc"
+        
+        mycursor.execute(sql)
+        
+        list = mycursor.fetchall()
+        output_list = []
+        for data in list:
+            ord = OrderHeader()
+            ord.order_header_id = data[0]
+            ord.table_id = data[1]
+            ord.table_number = data[2]
+            ord.total_amount = data[3]
+            ord.create_time = data[4]
+            
+            output_list.append(ord)
+            print(f"|{ord.order_header_id:4}")
+        
+        return output_list
+
+    def order_detail_get_all(self): 
+        mydb = self.connect()
+        mycursor = mydb.cursor()
+        mycursor.execute("select cafe_order_detail_id, cafe_order_header_id, c.cafe_table_id, cafe_table_number, c.menu_id, item, qty, unit_price, gst, amount, c.create_time from cafe_order_detail c inner join menu m on c.menu_id = m.menu_id inner join cafe_table  t on c.cafe_table_id = t.cafe_table_id order by cafe_order_detail_id")
+        
+        list = mycursor.fetchall()
+        output_list = []
+        for data in list:
+            ord = OrderDetail()
+            ord.cafe_order_detail_id = data[0]
+            ord.cafe_order_header_id = data[1]
+            ord.table_id = data[2]
+            ord.table_number = data[3]
+            ord.item_id = data[4]
+            ord.item = data[5]
+            ord.qty = data[6]
+            ord.price = data[7]
+            ord.gst = data[8]
+            ord.amount = data[9]
+            ord.create_time = data[10]
+            
+            output_list.append(ord)
+            print(f"|{ord.cafe_order_detail_id:4}")
+        
+        return output_list
+
+    def order_detail_get_by_id(self, cafe_order_header_id): 
+        mydb = self.connect()
+        mycursor = mydb.cursor()
+        
+        sql = "select c.cafe_order_detail_id, c.cafe_order_header_id, c.menu_id, item, qty, unit_price, gst, amount, c.create_time from cafe_order_detail c inner join menu m on c.menu_id = m.menu_id where c.cafe_order_header_id = '" + str(cafe_order_header_id) + "' order by c.cafe_order_detail_id"
+        
+        mycursor.execute(sql)
+        
+        list = mycursor.fetchall()
+        output_list = []
+        for data in list:
+            ord = OrderDetail()
+            ord.cafe_order_detail_id = data[0]
+            ord.cafe_order_header_id = data[1]
+            ord.item_id = data[2]
+            ord.item = data[3]
+            ord.qty = data[4]
+            ord.price = data[5]
+            ord.gst = data[6]
+            ord.amount = data[7]
+            ord.create_time = data[8]
+            
+            output_list.append(ord)
+            print(f"|{ord.cafe_order_detail_id:4}")
+        
+        return output_list
+
+    def order_detail_delete_by_id(self, cafe_order_header_id): 
+        mydb = self.connect()
+        mycursor = mydb.cursor()
+        
+        sql = "delete from cafe_order_detail where cafe_order_header_id = " + str(cafe_order_header_id)
+        
+        mycursor.execute(sql)
+        mydb.commit()
+        print('Order detail deleted:', cafe_order_header_id)
 
     def item_get_all(self): 
         mydb = self.connect()
@@ -118,6 +493,29 @@ class Database():
         
         return output_list
     
+    def item_get_by_category_id(self, category_id): 
+        mydb = self.connect()
+        mycursor = mydb.cursor()
+        mycursor.execute("select menu_id, item, price, description, spice_lvl, is_veg, m.category_id, category_name from menu m inner join category c on m.category_id = c.category_id where m.category_id=" + str(category_id))
+        
+        list = mycursor.fetchall()
+        output_list = []
+        for data in list:
+            itm = Item()
+            itm.item_id = data[0]
+            itm.item = data[1]
+            itm.price = data[2]
+            itm.description = data[3]
+            itm.spice_level = data[4]
+            itm.veg = data[5]
+            itm.category_id = data[6]
+            itm.category = data[7]
+            
+            output_list.append(itm)
+            print(f"|{itm.item_id:4}")
+        
+        return output_list
+
     def table_get_all(self): 
         mydb = self.connect()
         mycursor = mydb.cursor()
@@ -140,7 +538,29 @@ class Database():
     def table_reservation_get_all(self): 
         mydb = self.connect()
         mycursor = mydb.cursor()
-        mycursor.execute("select reservation_id, r.no_of_seats, date_time, r.customer_id, customer_name, r.cafe_table_id, cafe_table_number from reservation r inner join customer c on r.customer_id = c.customer_id inner join cafe_table ct on r.cafe_table_id = ct.cafe_table_id")
+        mycursor.execute("select reservation_id, r.no_of_seats, date_time, r.customer_id, customer_name, r.cafe_table_id, cafe_table_number from reservation r inner join customer c on r.customer_id = c.customer_id inner join cafe_table ct on r.cafe_table_id = ct.cafe_table_id order by reservation_id desc")
+        
+        list = mycursor.fetchall()
+        output_list = []
+        for data in list:
+            itm = TableReservation()
+            itm.reservation_id = data[0]
+            itm.pax = data[1]
+            itm.datetime = data[2]
+            itm.customer_id = data[3]
+            itm.customer = data[4]
+            itm.table_id = data[5]
+            itm.table_number = data[6]
+            
+            output_list.append(itm)
+            print(f"|{itm.reservation_id:4}")
+        
+        return output_list
+
+    def table_reservation_get_by_id(self, reservation_id): 
+        mydb = self.connect()
+        mycursor = mydb.cursor()
+        mycursor.execute("select reservation_id, r.no_of_seats, date_time, r.customer_id, customer_name, r.cafe_table_id, cafe_table_number from reservation r inner join customer c on r.customer_id = c.customer_id inner join cafe_table ct on r.cafe_table_id = ct.cafe_table_id where reservation_id = " + str(reservation_id))
         
         list = mycursor.fetchall()
         output_list = []
@@ -171,6 +591,29 @@ class Database():
         mydb.commit()
         print('Table Reservation created ')
 
+    def table_reservation_update(self, reserv=TableReservation): 
+        mydb = self.connect()        
+        mycursor = mydb.cursor()
+        
+        sql = "update reservation set no_of_seats=%s,date_time=%s, customer_id=%s, cafe_table_id=%s, update_time=now() where reservation_id=%s"
+        val = (reserv.pax, reserv.datetime, reserv.customer_id, reserv.table_id, reserv.reservation_id)
+        
+        mycursor.execute(sql, val)
+        
+        mydb.commit()
+        print('Table Reservation created ')
+
+    def table_reservation_delete(self, reservation_id): 
+        mydb = self.connect()        
+        mycursor = mydb.cursor()
+        
+        sql = "delete from reservation where reservation_id=" + str(reservation_id)
+        
+        mycursor.execute(sql)
+        
+        mydb.commit()
+        print('Table Reservation created ')
+
     def payment_mode_get_all(self): 
         mydb = self.connect()
         mycursor = mydb.cursor()
@@ -192,8 +635,8 @@ class Database():
         mydb = self.connect()        
         mycursor = mydb.cursor()
         
-        sql = "insert into bill(cafe_table_id, total_price, customer_id, payment_mode_id, date_time, create_time,update_time) VALUES (%s, %s, %s, %s, %s, now(), now())"
-        val = (bill.table_id, bill.total_price, bill.customer_id, bill.payment_mode_id, bill.datetime)
+        sql = "insert into bill(cafe_order_header_id, customer_id, payment_mode_id, date_time, create_time,update_time) VALUES (%s, %s, %s, %s, now(), now())"
+        val = (bill.cafe_order_header_id, bill.customer_id, bill.payment_mode_id, bill.datetime)
         
         mycursor.execute(sql, val)
         
@@ -203,23 +646,48 @@ class Database():
     def bill_get_all(self): 
         mydb = self.connect()
         mycursor = mydb.cursor()
-        mycursor.execute("select bill_id, b.cafe_table_id, c.cafe_table_number, total_price, b.customer_id, c1.customer_name, b.payment_mode_id, p.payment_mode_name, date_time from bill b inner join cafe_table c on b.cafe_table_id = c.cafe_table_id inner join customer c1 on b.customer_id = c1.customer_id inner join payment_mode p on b.payment_mode_id = p.payment_mode_id")
+        mycursor.execute("""select b.bill_id, b.cafe_order_header_id, b.customer_id, c1.customer_name, b.payment_mode_id, p.payment_mode_name, b.date_time, c.cafe_table_id, c.cafe_table_number, ch.total_amount 
+                from bill b 
+                inner join cafe_order_header ch on b.cafe_order_header_id = ch.cafe_order_header_id
+                inner join cafe_table c on ch.cafe_table_id = c.cafe_table_id 
+                inner join customer c1 on b.customer_id = c1.customer_id 
+                inner join payment_mode p on b.payment_mode_id = p.payment_mode_id
+                order by b.bill_id desc
+                """)
         
         list = mycursor.fetchall()
         output_list = []
         for data in list:
             bill = Bill()
             bill.bill_id = data[0]
-            bill.cafe_table_id = data[1]
-            bill.table_number = data[2]
-            bill.total_price = data[3]
-            bill.customer_id = data[4]
-            bill.customer = data[5]
-            bill.payment_mode_id = data[6]
-            bill.mode_of_payment = data[7]
-            bill.datetime = data[8]
+            bill.cafe_order_header_id = data[1]            
+            bill.customer_id = data[2]
+            bill.customer = data[3]
+            bill.payment_mode_id = data[4]
+            bill.mode_of_payment = data[5]
+            bill.datetime = data[6]
+            bill.table_id = data[7]
+            bill.table_number = data[8]
+            bill.total_amount = data[9]
             
             output_list.append(bill)
             print(f"|{bill.bill_id:4}")
+        
+        return output_list
+
+    def category_get_all(self): 
+        mydb = self.connect()
+        mycursor = mydb.cursor()
+        mycursor.execute("""select category_id, category_name from category order by category_id""")
+        
+        list = mycursor.fetchall()
+        output_list = []
+        for data in list:
+            cat = Category()
+            cat.category_id = data[0]
+            cat.category_name = data[1]            
+            
+            output_list.append(cat)
+            print(f"|{cat.category_id:4}")
         
         return output_list

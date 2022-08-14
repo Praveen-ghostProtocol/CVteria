@@ -1,59 +1,94 @@
 from tkinter import *
 import tkinter as tk
-
-from model.customer import Customer
-from model.table_reservation import TableReservation
-from model.bill import Bill
-from view.order_create import OrderCreate
-from view.table_create import TableCreate
-from view.table_reservation_create import TableReservationCreate
-from view.bill_create import BillCreate
 from view.customer_list import CustomerList
 from view.order_list import OrderList
 from view.bill_list import BillList
-
-from view.helper.comp_helper import ComponentHelper
+from view.welcome import Welcome
 from view.table_reservation_list import TableReservationList
 
-top = Tk()
+from view.helper.comp_helper import ComponentHelper
+
+from database.db import Database
+
+top = tk.Tk()
 
 class CVTeria(tk.Frame):
     def __init__(self, master=None):
         top.title("CVTeria")
         top.geometry("500x300")
 
-        top.grid()
-        menubar = Menu(top)
+        menubar = Menu(top, bg='black', fg='white',font=('Verdana',15))
+        
+        # Sets menubar background color and active select but does not remove 3d  effect/padding
+        menubar.config(bg='black', fg='white',font=('Verdana',15))
+
+        menubar.add_command(label="Welcome",command=self.welcome_page)
         menubar.add_command(label="Customer", command=self.customer_list)
         menubar.add_command(label="Order", command=self.order_list)
         menubar.add_command(label="Reserve Table", command=self.table_reservation_list)
         menubar.add_command(label="Pay Bill", command=self.bill_list)
         menubar.add_command(label="Quit!", command=top.quit)
-        top.config(menu=menubar)  
+        top.config(menu=menubar)
+        db = Database()
 
+        top.grid()
+        
+        #uncomment to setup db and seed data
+        #db.setup()
+        #db.seed()
+
+        self.welcome_page()
+        
+    def welcome_page(self):
+        helper = ComponentHelper()
+        helper.remove_all_widgets(top)
+        top.geometry("1280x720")    
+        Welcome(top)
+        print('welcome')
+        
     def customer_list(self):
         helper = ComponentHelper()
         helper.remove_all_widgets(top)
         top.geometry("650x300")        
-        cust_create = CustomerList(top)
+        cust = CustomerList(top)
+        cust.createWidgets(top)
+        cust.AddSubscribersForViewUpdatedEvent(self.customer_created)        
 
     def order_list(self):
         helper = ComponentHelper()
         helper.remove_all_widgets(top)
-        top.geometry("750x300")        
-        OrderList(top)
+        top.geometry("400x300")        
+        ord = OrderList(top)
+        ord.createWidgets(top)
+        ord.AddSubscribersForViewUpdatedEvent(self.order_created)
 
+    def order_created(self):
+        self.order_list()
+
+    def customer_created(self):
+        self.customer_list()
+        
     def bill_list(self):
         helper = ComponentHelper()
         helper.remove_all_widgets(top)
         top.geometry("575x300")        
-        BillList(top)
+        obj = BillList(top)
+        obj.createWidgets(top)
+        obj.AddSubscribersForViewUpdatedEvent(self.bill_created)
+
+    def bill_created(self):
+        self.bill_list()
 
     def table_reservation_list(self):
         helper = ComponentHelper()
         helper.remove_all_widgets(top)
         top.geometry("480x300")        
-        TableReservationList(top)
+        obj = TableReservationList(top)
+        obj.createWidgets(top)
+        obj.AddSubscribersForViewUpdatedEvent(self.table_reservation_created)
+
+    def table_reservation_created(self):
+        self.table_reservation_list()
             
 app = CVTeria()
 top.mainloop()
