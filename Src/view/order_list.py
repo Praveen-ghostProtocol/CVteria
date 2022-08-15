@@ -2,6 +2,8 @@ import tkinter as tk
 
 from tkinter import *
 from tkinter.ttk import *
+from tkinter import messagebox
+from model import order_detail
   
 from model.item import Item
 from model.order_header import OrderHeader
@@ -76,7 +78,26 @@ class OrderList():
         order_header_id = self.tv.item(row)['text']
         self.ord_create.createWidgets(self.win, order_header_id)
         
-    def delete(self):
+    def delete(self):        
+        row = self.popup.row
+        order_id = self.tv.item(row)['text']
+        db = Database()
+        bill_exist = db.bill_get_buy_order_header_id(order_id)
+        
+        
+        try:
+            if len(bill_exist) > 0:
+                messagebox.showerror('Failure!',"Cannot delete order, as there is an existing bill for it!")
+                return
+            else:
+                db.order_delete(order_id)
+            selected_item = self.tv.selection()[0]    
+            self.tv.delete(selected_item)
+        except:
+            messagebox.showerror('Failure!', 'Please select an Item before Deleting!')
+            return
+        
+        messagebox.showinfo('Success!', 'Order deleted Successfully')
         print("Delete", self.popup.selection)
 
     def do_popup(self, event):

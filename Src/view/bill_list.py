@@ -2,6 +2,7 @@ import tkinter as tk
 
 from tkinter import *
 from tkinter.ttk import *
+from tkinter import messagebox
   
 from model.bill import Bill
 from view.helper.comp_helper import ComponentHelper
@@ -70,8 +71,21 @@ class BillList():
         id = self.tv.item(row)['text']
         self.bill_create.createWidgets(self.win, id)
         
-    def delete(self):
-        print("Delete", self.popup.selection)
+    def delete(self):        
+            row = self.popup.row
+            bill_id = self.tv.item(row)['text']
+            db = Database()
+            db.bill_delete(bill_id)
+            
+            try:
+                selected_item = self.tv.selection()[0]    
+                self.tv.delete(selected_item)
+            except:
+                messagebox.showerror('Failure!', 'Please select an Item before Deleting!')
+                return
+            
+            messagebox.showinfo('Success!', 'Bill deleted Successfully')
+            print("Delete", self.popup.selection)
 
     def do_popup(self, event):
         # display the popup menu

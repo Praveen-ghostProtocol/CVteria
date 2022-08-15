@@ -34,8 +34,8 @@ class CVTeria(tk.Frame):
         top.grid()
         
         #uncomment to setup db and seed data
-        #db.setup()
-        #db.seed()
+        # db.setup()
+        # db.seed()
 
         self.welcome_page()
         

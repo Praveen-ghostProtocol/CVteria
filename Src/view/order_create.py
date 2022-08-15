@@ -231,6 +231,8 @@ class OrderCreate():
                 
                 if(data.veg == 1):
                     self.veg.config(text='Yes')
+                else:
+                    self.veg.config(text='No')
                 
                 #self.category[0].set(data.category)
 

@@ -43,7 +43,7 @@ class CustomerCreate():
         win.columnconfigure(1, weight=1)
 
         cust = Customer()
-        
+        cust.gender = "Please Select"
         db = Database()
         if(cust_id > 0):            
             self.cust_id = cust_id
@@ -52,6 +52,12 @@ class CustomerCreate():
                 cust.customer_id = self.cust_id
                 cust.customer_name = data.customer_name
                 cust.phone_number = data.phone_number
+                if data.gender == 1:
+                    cust.gender = "Male"
+                elif data.gender == 2:
+                    cust.gender = "Female"
+                else:
+                    cust.gender = "Other"
                 cust.gender = data.gender
                 cust.email_id = data.email_id
                 cust.DOB = data.DOB
@@ -60,7 +66,7 @@ class CustomerCreate():
         helper = ComponentHelper()
         self.name = helper.create_label_entry(win, 0,'Customer Name', cust.customer_name)
         self.phone = helper.create_label_entry(win, 1,'Phone Number', cust.phone_number)
-        self.gender = helper.create_label_entry(win, 2,'Gender', cust.gender)
+        self.gender = helper.create_label_options_menu(win, 2,'Gender', ['Male','Female','Other'], self.item_changed,cust.gender )
         self.email = helper.create_label_entry(win, 3,'Email Id', cust.email_id)
         self.dob = helper.create_label_entry(win, 4,'Date Of Birth', cust.DOB)
         self.doa = helper.create_label_entry(win, 5,'Anniversary Date', cust.anniversary_date)
@@ -71,6 +77,9 @@ class CustomerCreate():
         self.cancel = tk.Button(win, text='Cancel', command=lambda:self.customer_cancel())
         self.cancel.grid(row=6, column=1, sticky=tk.N+tk.S+tk.E+tk.W)
 
+    def item_changed(self):
+        pass
+        
     def customer_cancel(self):
         self.ViewUpdated()
         
@@ -92,7 +101,13 @@ class CustomerCreate():
         cust = Customer()
         cust.customer_name = self.name.get()
         cust.phone_number = self.phone.get()
-        cust.gender = self.gender.get()
+        if self.gender[0].get() == 'Male':
+            cust.gender = 1
+        elif self.gender[0].get() == "Female":
+            cust.gender = 2
+        else:
+            cust.gender = 3
+            
         cust.email_id = self.email.get()
         cust.DOB = self.dob.get()
         cust.anniversary_date = self.doa.get()

@@ -191,8 +191,15 @@ class Database():
         mydb.commit()
         
         #category
-        mycursor.execute("insert into category(category_name,create_time,update_time) VALUES('Starters',now(),now());")
-        mycursor.execute("insert into category(category_name,create_time,update_time) VALUES('Main Course',now(),now());")
+        mycursor.execute("insert into category(category_name,create_time,update_time) VALUES('Hot Beverages',now(),now());")
+        mycursor.execute("insert into category(category_name,create_time,update_time) VALUES('Cold Beverages',now(),now());")
+        mycursor.execute("insert into category(category_name,create_time,update_time) VALUES('Quick Bites',now(),now());")
+        mycursor.execute("insert into category(category_name,create_time,update_time) VALUES('Sandwiches',now(),now());")
+        mycursor.execute("insert into category(category_name,create_time,update_time) VALUES('Desserts',now(),now());")
+        mycursor.execute("insert into category(category_name,create_time,update_time) VALUES('Donuts',now(),now());")
+        mycursor.execute("insert into category(category_name,create_time,update_time) VALUES('English Breakfast',now(),now());")
+        mycursor.execute("insert into category(category_name,create_time,update_time) VALUES('Soups',now(),now());")
+        mycursor.execute("insert into category(category_name,create_time,update_time) VALUES('Grab-n-Go',now(),now());")
         mydb.commit()
         
         #payment_mode
@@ -202,14 +209,54 @@ class Database():
         mydb.commit()
 
         #menu
-        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Idli', 50, null, 'Idli or idly is a type of savoury rice cake', 0, True, 1, now(),now());")
-        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Dosa', 100, null, null, 1, True, 1, now(),now());            ")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Cappucino', 399, null, null, 0, True, 1, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Yamamoto Tea', 299, null, null, 0, True, 1, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Miguel Drink', 249, null, null, 0, True, 1, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Hot Chocolate', 349, null, null, 0, True, 1, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Frappe', 399, null, null, 0, True, 2, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Iced Tea', 299, null, null, 0, True, 2, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Oreo Milkshake', 249, null, null, 0, True, 2, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Blue Lagoon Mojito', 199, null, null, 0, True, 2, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Corn Cheese Balls', 349, null, null, 1, True, 3, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Potato Wedges', 199, null, null, 1, True, 3, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Peri Peri Fries', 299, null, null, 2, True, 3, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Merry Mellow Chicken Bites', 249, null, null, 3, False, 3, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('White Italian Tomato Sandwich', 249, null, null, 1, True, 4, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Mexican Grilled Cheese Sandwich', 299, null, null, 2, True, 4, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Chicken Tikka Sandwich', 249, null, null, 3, False, 4, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Mutton Sheekh Sandwich', 299, null, null, 3, False, 4, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Tiramisu', 249, null, null, 0, True, 5, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Sizzling Chocolate Brownie', 299, null, null, 0, True, 5, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Cheesecake', 149, null, null, 0, True, 5, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Gelato Ice Cream', 149, null, null, 0, True, 5, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Oreo Cookies and Creme Donut', 149, null, null, 0, True, 6, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Glazed Blueberry Donut', 249, null, null, 0, True, 6, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Reeses Classic Donut', 249, null, null, 0, True, 6, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Chocolate Iced Raspberry Donut', 149, null, null, 0, True, 6, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Croissant', 99, null, null, 0, True, 7, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Bagel', 99, null, null, 0, True, 7, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Sunny side up', 149, null, null, 1, False, 7, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Bacon and Mushroom Peas', 249, null, null, 1, False, 7, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Hot N Sour Soup', 99, null, null, 1, True, 8, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Sweet Corn Soup', 99, null, null, 1, True, 8, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Cream of Mushroom Soup', 99, null, null, 0, True, 8, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Clear Chicken Soup', 99, null, null, 1, False, 8, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Veg Frankie', 199, null, null, 1, True, 9, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Chicken Frankie', 199, null, null, 2, False, 9, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Choco Chip Cookies', 99, null, null, 0, True, 9, now(),now());")
+        mycursor.execute("insert into menu(item, price, size_id, description, spice_lvl, is_veg, category_id, create_time,update_time) VALUES('Spicy Chips', 99, null, null, 2, True, 9, now(),now());")
         mydb.commit()
 
         #cafe_table
         mycursor.execute("insert into cafe_table(cafe_table_number, no_of_seats, location, create_time,update_time) VALUES('Table 01', 2, '1st Floor, North East', now(),now());")
         mycursor.execute("insert into cafe_table(cafe_table_number, no_of_seats, location, create_time,update_time) VALUES('Table 02', 4, '1st Floor, South', now(),now());")
-        mycursor.execute("insert into cafe_table(cafe_table_number, no_of_seats, location, create_time,update_time) VALUES('Table 03', 6, '1st Floor, Center', now(),now());")
+        mycursor.execute("insert into cafe_table(cafe_table_number, no_of_seats, location, create_time,update_time) VALUES('Table 03', 6, '1st Floor, Center', now(),now());")        
+        mycursor.execute("insert into cafe_table(cafe_table_number, no_of_seats, location, create_time,update_time) VALUES('Table 04', 2, '2nd Floor, North East', now(),now());")
+        mycursor.execute("insert into cafe_table(cafe_table_number, no_of_seats, location, create_time,update_time) VALUES('Table 05', 4, '2nd Floor, South', now(),now());")
+        mycursor.execute("insert into cafe_table(cafe_table_number, no_of_seats, location, create_time,update_time) VALUES('Table 06', 6, '2nd Floor, Center', now(),now());")
+        mycursor.execute("insert into cafe_table(cafe_table_number, no_of_seats, location, create_time,update_time) VALUES('Table 07', 2, '3rd Floor, North East', now(),now());")
+        mycursor.execute("insert into cafe_table(cafe_table_number, no_of_seats, location, create_time,update_time) VALUES('Table 08', 4, '3rd Floor, South', now(),now());")
+        mycursor.execute("insert into cafe_table(cafe_table_number, no_of_seats, location, create_time,update_time) VALUES('Table 09', 6, '3rd Floor, Center', now(),now());")
         mydb.commit()
             
     def customer_create(self, cust=Customer): 
@@ -224,7 +271,7 @@ class Database():
         mydb.commit()
         print('customer created ')
 
-    def customer_update(self, cust=Customer): 
+    def customer_update(self, cust=Customer):
         mydb = self.connect()        
         mycursor = mydb.cursor()
         
@@ -246,6 +293,32 @@ class Database():
 
         mydb.commit()
         print('customer updated')
+        
+    def bill_delete(self, bill_id): 
+        mydb = self.connect()        
+        mycursor = mydb.cursor()
+        
+        sql = "delete from bill where bill_id=" + str(bill_id)
+        
+        mycursor.execute(sql)
+
+        mydb.commit()
+        print('bill updated')
+        
+    def order_delete(self, cafe_order_header_id): 
+        mydb = self.connect()        
+        mycursor = mydb.cursor()
+        
+        sql = "delete from cafe_order_detail where cafe_order_header_id=" + str(cafe_order_header_id)
+        
+        mycursor.execute(sql)
+        
+        sql = "delete from cafe_order_header where cafe_order_header_id=" + str(cafe_order_header_id)
+        
+        mycursor.execute(sql)
+
+        mydb.commit()
+        print('order updated')
 
     def customer_get_all(self): 
         mydb = self.connect()
@@ -669,6 +742,23 @@ class Database():
             bill.table_id = data[7]
             bill.table_number = data[8]
             bill.total_amount = data[9]
+            
+            output_list.append(bill)
+            print(f"|{bill.bill_id:4}")
+        
+        return output_list
+    
+    def bill_get_buy_order_header_id(self,cafe_order_header_id): 
+        mydb = self.connect()
+        mycursor = mydb.cursor()
+        
+        sql = "select bill_id from bill where cafe_order_header_id = "+str(cafe_order_header_id)
+        mycursor.execute(sql)
+        list = mycursor.fetchall()
+        output_list = []
+        for data in list:
+            bill = Bill()
+            bill.bill_id = data[0]
             
             output_list.append(bill)
             print(f"|{bill.bill_id:4}")
