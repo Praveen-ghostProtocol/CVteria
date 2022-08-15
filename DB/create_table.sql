@@ -89,6 +89,8 @@ CREATE TABLE cafe_order_detail(
 CREATE TABLE bill(  
     bill_id int NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Primary Key',
     cafe_order_header_id INT, INDEX cafe_order_header_id(cafe_order_header_id),CONSTRAINT fk_cafe_order_header_id FOREIGN KEY (cafe_order_header_id) REFERENCES cafe_order_header(cafe_order_header_id),
+	discount float,
+	final_amount float,
     create_time DATETIME COMMENT 'Create Time',
     update_time DATETIME COMMENT 'Update Time',
     customer_id INT, INDEX customer_id (customer_id),CONSTRAINT fk_bill_customer_id FOREIGN KEY (customer_id) REFERENCES customer(customer_id),

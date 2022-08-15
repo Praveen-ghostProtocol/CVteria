@@ -42,6 +42,9 @@ class TableReservationCreate():
         win.rowconfigure(1, weight=1)
         win.columnconfigure(1, weight=1)
 
+        helper = ComponentHelper()
+        win.frame = helper.add_background(win, "./images/table_resev_add_del.gif", 0.90)
+
         db = Database()
         self.table_list = db.table_get_all()
         table_arr = []
@@ -70,19 +73,25 @@ class TableReservationCreate():
                 obj.customer = data.customer
 
         helper = ComponentHelper()
-        self.customer = helper.create_label_options_menu(win, 0,'Customer', cust_arr, self.item_changed, obj.customer)
-        self.table = helper.create_label_options_menu(win, 1,'Table', table_arr, self.item_changed, obj.table_number)
-        helper.create_label_label(win, 2,'Number of Seats', 2)
-        helper.create_label_label(win, 3,'Location', '')
-        self.datetime = helper.create_label_entry(win, 4,'DateTime', obj.datetime)
-        self.pax = helper.create_label_entry(win, 5,'Pax', obj.pax)
+        self.customer = helper.create_label_options_menu(win.frame, 0,'Customer', cust_arr, self.item_changed, obj.customer)
+        self.table = helper.create_label_options_menu(win.frame, 1,'Table', table_arr, self.table_changed, obj.table_number)
+        self.number_of_seats = helper.create_label_label(win.frame, 2,'Number of Seats', 2)
+        self.location = helper.create_label_label(win.frame, 3,'Location', '')
+        self.datetime = helper.create_label_entry(win.frame, 4,'DateTime ', obj.datetime)
+        self.pax = helper.create_label_entry(win.frame, 5,'Pax', obj.pax)
         
-        self.submit = tk.Button(win, text='Submit', command=lambda:self.table_reservation_create())
+        self.submit = tk.Button(win.frame, text='Cancel', command=lambda:self.table_reservation_cancel())
         self.submit.grid(row=6, column=0, sticky=tk.N+tk.S+tk.E+tk.W)
 
-        self.submit = tk.Button(win, text='Cancel', command=lambda:self.table_reservation_cancel())
+        self.submit = tk.Button(win.frame, text='Submit', command=lambda:self.table_reservation_create())
         self.submit.grid(row=6, column=1, sticky=tk.N+tk.S+tk.E+tk.W)
 
+    def table_changed(self, *args):
+        for data in self.table_list:
+            if(data.table_number == args[0]):
+                self.number_of_seats.config(text=data.number_of_seats)
+                self.location.config(text=data.location)
+        
     def table_reservation_cancel(self):
         self.ViewUpdated()
         
@@ -96,6 +105,14 @@ class TableReservationCreate():
         if self.datetime.get().strip() == "":
             messagebox.showerror('Failure!', 'Please Enter DateTime!')
             return   
+
+        try:
+            res = bool(datetime.strptime(self.datetime.get().strip(), '%Y-%m-%d  %H:%M:%S'))
+        except BaseException as e:
+            print(e)
+            messagebox.showerror('Failure!', 'Please enter DateTime in YYYY-mm-dd HH:MM:SS format')
+            return   
+
         if datetime.strptime(self.datetime.get().strip(), '%Y-%m-%d %H:%M:%S') < datetime.now():
             messagebox.showerror('Failure!', 'DateTime should be in the future')
             return   
@@ -105,19 +122,23 @@ class TableReservationCreate():
         if self.pax.get() == "0":
             messagebox.showerror('Failure!', 'Please Enter at least 1 person')
             return
+        if int(self.pax.get()) > int(self.number_of_seats.cget("text")):
+            messagebox.showerror('Failure!', str(self.table[0].get()) + ' can accomodate only '+ str(self.number_of_seats.cget("text")) + ' people')
+            return
 
 
         db = Database()
-        reserv_list = db.table_reservation_get_all()
-        for data in reserv_list:
-            
-            dt = datetime.strptime(str(data.datetime), '%Y-%m-%d %H:%M:%S')
-            dt_one = dt + timedelta(hours=1)
-            user_dt = datetime.strptime(self.datetime.get().strip(), '%Y-%m-%d %H:%M:%S')
-            
-            if((dt <= user_dt <= dt_one) and data.table_number == self.table[0].get()):
-                messagebox.showerror('Failure!', 'Table already booked from ' + str(dt) + " to " + str(dt_one))
-                return
+        if(self.id == 0):
+            reserv_list = db.table_reservation_get_all()
+            for data in reserv_list:
+                
+                dt = datetime.strptime(str(data.datetime), '%Y-%m-%d %H:%M:%S')
+                dt_one = dt + timedelta(hours=1)
+                user_dt = datetime.strptime(self.datetime.get().strip(), '%Y-%m-%d %H:%M:%S')
+                
+                if((dt <= user_dt <= dt_one) and data.table_number == self.table[0].get()):
+                    messagebox.showerror('Failure!', 'Table already booked from ' + str(dt) + " to " + str(dt_one))
+                    return
         
         reserv = TableReservation()
         for data in self.table_list:

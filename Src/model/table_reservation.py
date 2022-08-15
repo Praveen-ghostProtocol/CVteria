@@ -9,6 +9,6 @@ class TableReservation():
     table_number = ''
     pax = 2
     location = 'dummy'
-    datetime = '2020-01-01 10:10:00'
+    datetime = 'YYYY-mm-dd HH:MM:ss'
     customer_id = 1
     customer = ''

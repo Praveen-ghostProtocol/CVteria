@@ -166,7 +166,9 @@ class Database():
             CREATE TABLE IF NOT EXISTS
             bill(  
                 bill_id int NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Primary Key',
-                cafe_order_header_id INT, INDEX cafe_order_header_id(cafe_order_header_id),CONSTRAINT fk_cafe_order_header_id_bill FOREIGN KEY (cafe_order_header_id) REFERENCES cafe_order_header(cafe_order_header_id) ,	
+                cafe_order_header_id INT, INDEX cafe_order_header_id(cafe_order_header_id),CONSTRAINT fk_cafe_order_header_id_bill FOREIGN KEY (cafe_order_header_id) REFERENCES cafe_order_header(cafe_order_header_id) ,
+                discount float,
+                final_amount float,	
                 create_time DATETIME COMMENT 'Create Time',
                 update_time DATETIME COMMENT 'Update Time',
                 customer_id INT, INDEX customer_id (customer_id),CONSTRAINT fk_bill_customer_id FOREIGN KEY (customer_id) REFERENCES customer(customer_id) ,
@@ -708,8 +710,20 @@ class Database():
         mydb = self.connect()        
         mycursor = mydb.cursor()
         
-        sql = "insert into bill(cafe_order_header_id, customer_id, payment_mode_id, date_time, create_time,update_time) VALUES (%s, %s, %s, %s, now(), now())"
-        val = (bill.cafe_order_header_id, bill.customer_id, bill.payment_mode_id, bill.datetime)
+        sql = "insert into bill(cafe_order_header_id,discount,final_amount,customer_id, payment_mode_id, date_time, create_time,update_time) VALUES (%s, %s, %s, %s, now(), now())"
+        val = (bill.cafe_order_header_id, bill.discount,bill.final_amount,bill.customer_id, bill.payment_mode_id, bill.datetime)
+        
+        mycursor.execute(sql, val)
+        
+        mydb.commit()
+        print('Bill created ')
+
+    def bill_update(self, bill=Bill): 
+        mydb = self.connect()        
+        mycursor = mydb.cursor()
+        
+        sql = "update bill set customer_id=%s, payment_mode_id=%s,discount=%s,final_amount=%s, update_time=now() where bill_id=%s"
+        val = (bill.customer_id, bill.payment_mode_id, bill.discount,bill.final_amount,bill.bill_id)
         
         mycursor.execute(sql, val)
         
@@ -719,7 +733,7 @@ class Database():
     def bill_get_all(self): 
         mydb = self.connect()
         mycursor = mydb.cursor()
-        mycursor.execute("""select b.bill_id, b.cafe_order_header_id, b.customer_id, c1.customer_name, b.payment_mode_id, p.payment_mode_name, b.date_time, c.cafe_table_id, c.cafe_table_number, ch.total_amount 
+        mycursor.execute("""select b.bill_id, b.cafe_order_header_id, b.customer_id, c1.customer_name, b.payment_mode_id, p.payment_mode_name,b.discount,b.final_amount,b.date_time, c.cafe_table_id, c.cafe_table_number, ch.total_amount 
                 from bill b 
                 inner join cafe_order_header ch on b.cafe_order_header_id = ch.cafe_order_header_id
                 inner join cafe_table c on ch.cafe_table_id = c.cafe_table_id 
@@ -738,16 +752,52 @@ class Database():
             bill.customer = data[3]
             bill.payment_mode_id = data[4]
             bill.mode_of_payment = data[5]
-            bill.datetime = data[6]
-            bill.table_id = data[7]
-            bill.table_number = data[8]
-            bill.total_amount = data[9]
+            bill.discount = data[6]
+            bill.final_amount = data[7]
+            bill.datetime = data[8]
+            bill.table_id = data[9]
+            bill.table_number = data[10]
+            bill.total_amount = data[11]
             
             output_list.append(bill)
             print(f"|{bill.bill_id:4}")
         
         return output_list
     
+    def bill_get_by_id(self, bill_id): 
+        mydb = self.connect()
+        mycursor = mydb.cursor()
+        mycursor.execute("""select b.bill_id, b.cafe_order_header_id, b.customer_id, c1.customer_name, b.payment_mode_id, p.payment_mode_name,b.discount,b.final_amount, b.date_time, c.cafe_table_id, c.cafe_table_number, ch.total_amount 
+                from bill b 
+                inner join cafe_order_header ch on b.cafe_order_header_id = ch.cafe_order_header_id
+                inner join cafe_table c on ch.cafe_table_id = c.cafe_table_id 
+                inner join customer c1 on b.customer_id = c1.customer_id 
+                inner join payment_mode p on b.payment_mode_id = p.payment_mode_id
+                where b.bill_id = """ + str(bill_id) +
+                """ order by b.bill_id desc""")
+        
+        list = mycursor.fetchall()
+        output_list = []
+        for data in list:
+            bill = Bill()
+            bill.bill_id = data[0]
+            bill.cafe_order_header_id = data[1]            
+            bill.customer_id = data[2]
+            bill.customer = data[3]
+            bill.payment_mode_id = data[4]
+            bill.mode_of_payment = data[5]
+            bill.discount = data[6]
+            bill.final_amount = data[7]
+            bill.datetime = data[8]
+            bill.table_id = data[9]
+            bill.table_number = data[10]
+            bill.total_amount = data[11]
+            
+            output_list.append(bill)
+            print(f"|{bill.bill_id:4}")
+        
+        return output_list
+
     def bill_get_buy_order_header_id(self,cafe_order_header_id): 
         mydb = self.connect()
         mycursor = mydb.cursor()
@@ -765,6 +815,23 @@ class Database():
         
         return output_list
 
+    def bill_get_buy_customer_id(self,customer_id): 
+        mydb = self.connect()
+        mycursor = mydb.cursor()
+        
+        sql = "select bill_id from bill where customer_id = "+str(customer_id)
+        mycursor.execute(sql)
+        list = mycursor.fetchall()
+        output_list = []
+        for data in list:
+            bill = Bill()
+            bill.bill_id = data[0]
+            
+            output_list.append(bill)
+            print(f"|{bill.bill_id:4}")
+        
+        return output_list
+    
     def category_get_all(self): 
         mydb = self.connect()
         mycursor = mydb.cursor()

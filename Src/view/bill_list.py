@@ -13,6 +13,8 @@ from view.event import Event
 class BillList():
     tv = Treeview
     win = object
+    toolbar = object
+    
     def __init__(self, win):
         print('bill list constructor')
         self.bil_create = BillCreate()
@@ -33,19 +35,23 @@ class BillList():
         self.ViewUpdated()
         print('order created')
 
-    def createWidgets(self, win):
+    def createWidgets(self, win, toolbar):
         top=win.winfo_toplevel()
-
+        self.toolbar = toolbar
+        
         top.rowconfigure(0, weight=1)
         top.columnconfigure(0, weight=1)
 
         win.rowconfigure(1, weight=1)
         win.columnconfigure(1, weight=1)
-                
-        win.submit = tk.Button(win, text='Add Bill', command=lambda:self.bill_create(win))
-        win.submit.grid(row=0, column=1, sticky=tk.N+tk.S+tk.E+tk.W,padx=10,pady=10)
 
-        tv = self.CreateUI(win)
+        helper = ComponentHelper()
+        win.frame = helper.add_background(win, "./images/bill_list.gif")
+                
+        win.submit = tk.Button(win.frame, text='Add Bill', command=lambda:self.bill_create(win))
+        win.submit.grid(row=2, column=0, sticky=tk.N+tk.S+tk.E+tk.W,padx=10,pady=10)
+
+        tv = self.CreateUI(win.frame)
         
         db = Database()
         reserv_list = db.bill_get_all()
@@ -55,21 +61,23 @@ class BillList():
     def bill_create(self, win):
         helper = ComponentHelper()
         helper.remove_all_widgets(win)
-        win.geometry("350x200")
+        win.geometry("1280x785")
+        self.toolbar(win)
         self.bil_create.createWidgets(win)
                 
     def AddItem(self, tv, bill=Bill):
-        tv.insert("", 'end', iid=None, text=bill.bill_id, values=(bill.customer, bill.table_number, bill.total_amount, bill.mode_of_payment, bill.datetime))
+        tv.insert("", 'end', iid=None, text=bill.bill_id, values=(bill.customer, bill.table_number, bill.total_amount,bill.discount,bill.final_amount,bill.mode_of_payment, bill.datetime))
         
     def edit(self):
         print("Edit", self.popup.selection)
 
         helper = ComponentHelper()
         helper.remove_all_widgets(self.win)
-        self.win.geometry("800x700")
+        self.win.geometry("1280x785")
         row = self.popup.row
         id = self.tv.item(row)['text']
-        self.bill_create.createWidgets(self.win, id)
+        self.toolbar(self.win)
+        self.bil_create.createWidgets(self.win, id)
         
     def delete(self):        
             row = self.popup.row
@@ -98,7 +106,7 @@ class BillList():
             self.popup.grab_release()    
 
     def CreateUI(self, win):
-        self.tv = Treeview(win)
+        self.tv = Treeview(win, height=24)
 
         #Create menu
         self.popup = tk.Menu(win, tearoff=0)
@@ -108,10 +116,10 @@ class BillList():
 
         self.tv.bind("<Button-3>", self.do_popup)        
         
-        self.tv['columns'] = ( 'Customer', 'Table Number', 'Total Amount', 'Mode Of Payment', 'DateTime')
+        self.tv['columns'] = ( 'Customer', 'Table Number', 'Total Amount','Discount','Final Amount','Mode Of Payment', 'DateTime')
         
         self.tv.heading("#0", text='#', anchor='w')
-        self.tv.column("#0", anchor="w", width=35)
+        self.tv.column("#0", anchor="w", width=50)
 
         self.tv.heading('Customer', text='Customer')
         self.tv.column('Customer', anchor='center', width=100)
@@ -122,13 +130,19 @@ class BillList():
         self.tv.heading('Total Amount', text='Total Amount')
         self.tv.column('Total Amount', anchor='center', width=100)
         
+        self.tv.heading('Discount', text='Discount')
+        self.tv.column('Discount', anchor='center', width=100)
+        
+        self.tv.heading('Final Amount', text='Final Amount')
+        self.tv.column('Final Amount', anchor='center', width=100)
+                
         self.tv.heading('Mode Of Payment', text='Mode Of Payment')
         self.tv.column('Mode Of Payment', anchor='center', width=100)
 
         self.tv.heading('DateTime', text='DateTime')
         self.tv.column('DateTime', anchor='center', width=150)
         
-        self.tv.grid(row=1, column=1, sticky = (N,S,W,E))
+        self.tv.grid(row=3, column=0, sticky = (N,S,W,E))
         self.treeview = self.tv
         
         return self.tv

@@ -13,7 +13,7 @@ class Welcome():
 
         win.rowconfigure(0, weight=1)
         win.columnconfigure(0, weight=1)
-
+        
         win.python_image = tk.PhotoImage(file="./images/welcome.gif")
         label = tk.Label(win, image=win.python_image)
-        label.grid(row=0, column=0, sticky=tk.N+tk.S+tk.E+tk.W)
+        label.grid(row=1, column=0, sticky=tk.N+tk.S+tk.E+tk.W)

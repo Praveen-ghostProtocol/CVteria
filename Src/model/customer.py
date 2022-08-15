@@ -7,5 +7,5 @@ class Customer():
     phone_number = ''
     gender = 1
     email_id = ''
-    DOB = ''
-    anniversary_date = ''
+    DOB = 'YYYY-mm-dd'
+    anniversary_date = 'YYYY-mm-dd'

@@ -14,7 +14,8 @@ from view.event import Event
 class TableReservationList():
     tv = Treeview
     win = object
-
+    toolbar = object
+    
     def __init__(self, win):
         print('table list constructor')
         self.tbl_reservation_create = TableReservationCreate(win)
@@ -31,19 +32,23 @@ class TableReservationList():
     def RemoveSubscribersForViewUpdatedEvent(self,objMethod):
         self.OnViewUpdated -= objMethod
 
-    def createWidgets(self, win):
+    def createWidgets(self, win, toolbar):
         top=win.winfo_toplevel()
-
+        self.toolbar = toolbar
+        
         top.rowconfigure(0, weight=1)
         top.columnconfigure(0, weight=1)
 
         win.rowconfigure(1, weight=1)
         win.columnconfigure(1, weight=1)
-                
-        win.submit = tk.Button(win, text='Add Table Reservation', command=lambda:self.table_reservation_create(win))
-        win.submit.grid(row=7, column=1, sticky=tk.N+tk.S+tk.E+tk.W,padx=10,pady=10)
 
-        tv = self.CreateUI(win)
+        helper = ComponentHelper()
+        win.frame = helper.add_background(win, "./images/table_reservation.gif")
+                
+        win.submit = tk.Button(win.frame, text='Add Table Reservation', command=lambda:self.table_reservation_create(win))
+        win.submit.grid(row=2, column=0, sticky=tk.N+tk.S+tk.E+tk.W,padx=10,pady=10)
+
+        tv = self.CreateUI(win.frame)
         db = Database()
         reserv_list = db.table_reservation_get_all()
         for data in reserv_list:
@@ -56,9 +61,8 @@ class TableReservationList():
     def table_reservation_create(self, win):
         helper = ComponentHelper()
         helper.remove_all_widgets(win)
-        win.geometry("550x200")
-        #reserv = TableReservation() #populate this object when opening in edit mode
-        #reserv_create = TableReservationCreate(win, reserv)
+        win.geometry("1280x785")
+        self.toolbar(win)
         self.tbl_reservation_create.createWidgets(win)
                 
     def AddItem(self, tv, reserv=TableReservation):
@@ -69,9 +73,10 @@ class TableReservationList():
 
         helper = ComponentHelper()
         helper.remove_all_widgets(self.win)
-        self.win.geometry("400x200")
+        self.win.geometry("1280x785")
         row = self.popup.row
         id = self.tv.item(row)['text']
+        self.toolbar(self.win)
         self.tbl_reservation_create.createWidgets(self.win, id)
         
     def delete(self):        
@@ -101,7 +106,7 @@ class TableReservationList():
             self.popup.grab_release()    
         
     def CreateUI(self, win):
-        self.tv = Treeview(win)
+        self.tv = Treeview(win, height=24)
 
         #Create menu
         self.popup = tk.Menu(win, tearoff=0)
@@ -114,10 +119,10 @@ class TableReservationList():
         self.tv['columns'] = ('Table Number', 'Pax', 'DateTime', 'Customer')
         
         self.tv.heading("#0", text='#', anchor='w')
-        self.tv.column("#0", anchor="w", width=25)
+        self.tv.column("#0", anchor="w", width=50)
 
         self.tv.heading('Table Number', text='Table Number')
-        self.tv.column('Table Number', anchor='center', width=100)
+        self.tv.column('Table Number', anchor='center', width=150)
 
         self.tv.heading('Pax', text='Pax')
         self.tv.column('Pax', anchor='center', width=100)
@@ -126,9 +131,9 @@ class TableReservationList():
         self.tv.column('DateTime', anchor='center', width=150)
         
         self.tv.heading('Customer', text='Customer')
-        self.tv.column('Customer', anchor='center', width=100)
+        self.tv.column('Customer', anchor='center', width=200)
 
-        self.tv.grid(row=8, column=1, sticky = (N,S,W,E))
+        self.tv.grid(row=3, column=0, sticky = (N,S,W,E))
         self.treeview = self.tv
         
         return self.tv

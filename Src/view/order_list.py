@@ -19,6 +19,7 @@ class OrderList():
     i=1
     tv = Treeview
     win = object
+    toolbar = object
     
     def __init__(self, win):
         print('order list constructor')
@@ -36,19 +37,23 @@ class OrderList():
     def RemoveSubscribersForViewUpdatedEvent(self,objMethod):
         self.OnViewUpdated -= objMethod
 
-    def createWidgets(self, win):
+    def createWidgets(self, win, toolbar):
         top=win.winfo_toplevel()
-
+        self.toolbar = toolbar
+        
         top.rowconfigure(0, weight=1)
         top.columnconfigure(0, weight=1)
 
         win.rowconfigure(1, weight=1)
         win.columnconfigure(1, weight=1)
-                
-        win.submit = tk.Button(win, text='Add Order', command=lambda:self.order_create(win))
-        win.submit.grid(row=7, column=1, sticky=tk.N+tk.S+tk.E+tk.W,padx=10,pady=10)
 
-        tv = self.CreateUI(win)
+        helper = ComponentHelper()
+        win.frame = helper.add_background(win, "./images/order_list.gif")
+                
+        win.submit = tk.Button(win.frame, text='Add Order', command=lambda:self.order_create(win))
+        win.submit.grid(row=2, column=0, sticky=tk.N+tk.S+tk.E+tk.W,padx=10,pady=10)
+
+        tv = self.CreateUI(win.frame)
         
         db = Database()
         order_list = db.order_header_get_all()
@@ -62,7 +67,8 @@ class OrderList():
     def order_create(self, win):
         helper = ComponentHelper()
         helper.remove_all_widgets(win)
-        win.geometry("800x700")
+        self.win.geometry("1280x785")
+        self.toolbar(win)
         self.ord_create.createWidgets(win)
                 
     def AddItem(self, tv, ord=OrderHeader):
@@ -70,12 +76,12 @@ class OrderList():
         
     def edit(self):
         print("Edit", self.popup.selection)
-
         helper = ComponentHelper()
         helper.remove_all_widgets(self.win)
-        self.win.geometry("800x700")
+        self.win.geometry("1280x785")
         row = self.popup.row
         order_header_id = self.tv.item(row)['text']
+        self.toolbar(self.win)
         self.ord_create.createWidgets(self.win, order_header_id)
         
     def delete(self):        
@@ -111,7 +117,7 @@ class OrderList():
             self.popup.grab_release()    
 
     def CreateUI(self, win):
-        self.tv = Treeview(win)
+        self.tv = Treeview(win, height=24)
         
         #Create menu
         self.popup = tk.Menu(win, tearoff=0)
@@ -124,18 +130,18 @@ class OrderList():
         self.tv['columns'] = ('Table', 'Date Time', 'Total Amount')
         
         self.tv.heading("#0", text='#', anchor='w')
-        self.tv.column("#0", anchor="w", width=25)
+        self.tv.column("#0", anchor="w", width=50)
 
         self.tv.heading('Table', text='Table')
-        self.tv.column('Table', anchor='center', width=100)
+        self.tv.column('Table', anchor='center', width=300)
 
         self.tv.heading('Date Time', text='Date Time')
-        self.tv.column('Date Time', anchor='center', width=120)
+        self.tv.column('Date Time', anchor='center', width=150)
 
         self.tv.heading('Total Amount', text='Total Amount')
-        self.tv.column('Total Amount', anchor='center', width=100)
+        self.tv.column('Total Amount', anchor='center', width=150)
 
-        self.tv.grid(row=8, column=1, sticky = (N,S,W,E))
+        self.tv.grid(row=3, column=0, sticky = (N,S,W,E))
         self.treeview = self.tv
         
         return self.tv

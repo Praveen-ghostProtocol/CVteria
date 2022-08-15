@@ -61,6 +61,9 @@ class OrderCreate():
         win.columnconfigure(1, weight=1)
         self.win = win
 
+        helper = ComponentHelper()
+        win.frame = helper.add_background(win, "./images/order_add_del.gif", 0.90)
+
         db = Database()
         self.item_list = db.item_get_all()
         item_arr = []
@@ -93,7 +96,7 @@ class OrderCreate():
                 order_header.table_number = data.table_number
                 order_header.total_amount = data.total_amount
         
-        header = Frame(win)  
+        header = Frame(win.frame)  
         header['padding'] = 1
         header['width'] = 500
         header['height'] = 100
@@ -104,19 +107,18 @@ class OrderCreate():
         self.table = helper.create_label_options_menu(header, 0,'Table', table_arr, self.table_changed, order_header.table_number)
         self.total_amount = helper.create_label_label(header, 1,'Total Amount', order_header.total_amount)
         
-        self.category = helper.create_label_options_menu(win, 2,'Category', category_arr, self.category_changed)
-        self.item = helper.create_label_options_menu(win, 3,'Item Name', item_arr, self.item_changed)
-        self.qty = helper.create_label_entry(win, 4,'Quantity', 1)
-        self.price = helper.create_label_label(win, 5,'Price', 0)
-        self.description = helper.create_label_label(win, 6,'Description', '')
-        self.spice_lvl = helper.create_label_label(win, 7,'Spice Level', 1)
-        self.veg = helper.create_label_label(win, 8,'Veg', 'Yes')
-        self.gst = helper.create_label_label(win, 9,'GST', '18')
-        #self.amount = helper.create_label_label(win, 10,'Amount', 1)
+        self.category = helper.create_label_options_menu(win.frame, 2,'Category', category_arr, self.category_changed)
+        self.item = helper.create_label_options_menu(win.frame, 3,'Item Name', item_arr, self.item_changed)
+        self.qty = helper.create_label_entry(win.frame, 4,'Quantity', 1)
+        self.price = helper.create_label_label(win.frame, 5,'Price', 0)
+        self.description = helper.create_label_label(win.frame, 6,'Description', '')
+        self.spice_lvl = helper.create_label_label(win.frame, 7,'Spice Level', 1)
+        self.veg = helper.create_label_label(win.frame, 8,'Veg', 'Yes')
+        self.gst = helper.create_label_label(win.frame, 9,'GST', '18')
                 
-        button_frame = Frame(win)  
-        button_frame['padding'] = 1
-        button_frame.grid(columnspan=2)
+        button_frame = tk.Frame(win.frame, bg='#CC8066')  
+        #button_frame.place(relx=0,rely=0,relwidth=0.75,relheight=0.75)
+        button_frame.grid(columnspan=2, sticky=tk.S)
 
         self.add = tk.Button(button_frame, text='Add Item', command=lambda:self.AddItem(tv, False))
         self.add.grid(row=11, column=1, sticky=tk.N+tk.S+tk.E+tk.W,padx=10,pady=10)
@@ -132,7 +134,7 @@ class OrderCreate():
         help = tk.Label(button_frame, text='*Right click to Edit or Delete the Item')
         help.grid(row=12, column=1, sticky=tk.N+tk.S+tk.E+tk.W,padx=10,pady=10)
         
-        tv = self.CreateUI(win, 13)
+        tv = self.CreateUI(win.frame, 13)
 
         if(order_header_id != ''):
             order_detail_list = db.order_detail_get_by_id(order_header_id)
@@ -149,8 +151,7 @@ class OrderCreate():
                 tv.insert("", 'end', iid=None, text=self.i, values=(data.item, data.qty, data.price, data.gst, data.amount))
                 self.i = self.i + 1
         
-        submit_button_frame = Frame(win)  
-        submit_button_frame['padding'] = 1
+        submit_button_frame = tk.Frame(win.frame, bg='#CC8066')  
         submit_button_frame.grid(columnspan=2)
 
         self.submit = tk.Button(submit_button_frame, text='Submit Order', command=lambda:self.order_create())
@@ -259,7 +260,7 @@ class OrderCreate():
 
         if(self.order_header_id != '' and self.order_header_id != 0):            
             order_header.order_header_id = self.order_header_id
-            self.order_header_id = db.order_header_update(order_header)
+            db.order_header_update(order_header)
             db.order_detail_delete_by_id(self.order_header_id)
         else:
             self.order_header_id = db.order_header_create(order_header)
@@ -273,7 +274,6 @@ class OrderCreate():
             order_detail.price = ord.price
             order_detail.amount = ord.amount
             db.order_detail_create(order_detail)
-
 
         messagebox.showinfo('Success!', 'Order Created Successfully')
         self.ViewUpdated()
@@ -393,7 +393,7 @@ class OrderCreate():
         self.popup.add_separator()
         self.popup.add_command(label="Delete", command=self.delete)        
                 
-        self.tv = Treeview(win)
+        self.tv = Treeview(win, height=9)
         self.tv.bind("<Button-3>", self.do_popup)        
         
         self.tv['columns'] = ('Item', 'Qty', 'Price', 'GST', 'Amount')
@@ -402,7 +402,7 @@ class OrderCreate():
         self.tv.column("#0", anchor="w", width=25)
 
         self.tv.heading('Item', text='Item')
-        self.tv.column('Item', anchor='center', width=100)
+        self.tv.column('Item', anchor='center', width=200)
 
         self.tv.heading('Qty', text='Qty')
         self.tv.column('Qty', anchor='center', width=100)
@@ -416,7 +416,7 @@ class OrderCreate():
         self.tv.heading('Amount', text='Amount')
         self.tv.column('Amount', anchor='center', width=100)
 
-        self.tv.grid(row=row, column=1, sticky = (N,S,W,E))
+        self.tv.grid(row=row, column=0, sticky = (N,S,W,E), columnspan=2)
         self.treeview = self.tv
         
         return self.tv

@@ -8,7 +8,9 @@ from database.db import Database
 from view.event import Event
 
 class BillCreate():
+    
     cafe_order_header_id=0
+    id=0
     def __init__(self):
         print('create bill constructor')
         self.OnViewUpdated = Event()
@@ -23,6 +25,7 @@ class BillCreate():
         self.OnViewUpdated -= objMethod
 
     def createWidgets(self, win, id=0):
+        self.id = id
         top=win.winfo_toplevel()
 
         top.rowconfigure(0, weight=1)
@@ -30,6 +33,9 @@ class BillCreate():
 
         win.rowconfigure(1, weight=1)
         win.columnconfigure(1, weight=1)
+
+        helper = ComponentHelper()
+        win.frame = helper.add_background(win, "./images/bill_add_del2.gif")
 
         db = Database()
         self.order_header_list = db.order_header_get_upaid()
@@ -56,21 +62,53 @@ class BillCreate():
         for data in self.payment_mode_list:
             payment_mode_arr.append(data.payment_mode_name)
 
-        helper = ComponentHelper()
-        self.order = helper.create_label_options_menu(win, 0,'Order', order_header_arr, self.order_changed)
-        
-        self.table = helper.create_label_label(win, 1,'Table', 0)
-        self.total_amount = helper.create_label_label(win, 2,'Total Amount', 0)
-        self.datetime = helper.create_label_label(win, 3, 'DateTime', 0)
-        
-        self.cust = helper.create_label_options_menu(win, 4,'Customer', cust_arr, self.item_changed)
-        self.mode_of_payment = helper.create_label_options_menu(win, 5,'Mode Of Payment', payment_mode_arr, self.item_changed)
-                
-        self.submit = tk.Button(win, text='Submit', command=lambda:self.bill_create())
-        self.submit.grid(row=6, column=0, sticky=tk.N+tk.S+tk.E+tk.W)
+        bill = Bill()
+        db = Database()
+        if(id > 0):            
+            list = db.bill_get_by_id(id)
+            for data in list:
+                bill.bill_id = data.bill_id
+                bill.cafe_order_header_id=data.cafe_order_header_id
+                bill.payment_mode_id = data.payment_mode_id
+                bill.mode_of_payment = data.mode_of_payment
+                bill.datetime = data.datetime
+                bill.customer_id = data.customer_id
+                bill.customer = data.customer
+                bill.table_id = data.table_id
+                bill.table_number = data.table_number
+                bill.total_amount=data.total_amount
+                bill.discount = data.discount
+                bill.final_amount = data.final_amount
+            order_txt = ''
+            for data in self.order_header_list:
+                if(data.cafe_order_header_id == bill.cafe_order_header_id):
+                    order_txt = str(data.order_header_id) + "|" + str(data.table_number) + "|" + str(data.total_amount) + "|" + str(data.create_time)
 
-        cancel = tk.Button(win, text='Cancel', command=lambda:self.bill_cancel())
-        cancel.grid(row=6, column=1, sticky=tk.N+tk.S+tk.E+tk.W)
+                
+        helper = ComponentHelper()
+        if(self.id > 0):
+            self.order = helper.create_label_options_menu(win.frame, 0,'Order', order_header_arr, self.order_changed, order_txt)
+            self.cust = helper.create_label_options_menu(win.frame, 4,'Customer', cust_arr, self.customer_changed, bill.customer)
+            self.mode_of_payment = helper.create_label_options_menu(win.frame, 5,'Mode Of Payment', payment_mode_arr, self.item_changed, bill.mode_of_payment)
+        else:
+            self.order = helper.create_label_options_menu(win.frame, 0,'Order', order_header_arr, self.order_changed)
+            self.cust = helper.create_label_options_menu(win.frame, 4,'Customer', cust_arr, self.customer_changed)
+            self.mode_of_payment = helper.create_label_options_menu(win.frame, 7,'Mode Of Payment', payment_mode_arr, self.item_changed)
+        
+        self.table = helper.create_label_label(win.frame, 1,'Table', bill.table_number)
+        self.total_amount = helper.create_label_label(win.frame, 2,'Total Amount', bill.total_amount)        
+        self.datetime = helper.create_label_label(win.frame, 3, 'DateTime', bill.datetime)
+        self.total_amount = helper.create_label_entry(win.frame, 5,'Discount', bill.discount)
+        self.total_amount = helper.create_label_label(win.frame, 6,'Final Amount', bill.final_amount)
+                
+        cancel = tk.Button(win.frame, text='Cancel', command=lambda:self.bill_cancel())
+        cancel.grid(row=7, column=0, sticky=tk.N+tk.S+tk.E+tk.W)
+
+        self.submit = tk.Button(win.frame, text='Submit', command=lambda:self.bill_create())
+        self.submit.grid(row=7, column=1, sticky=tk.N+tk.S+tk.E+tk.W)
+
+        if(self.id > 0):
+            self.order[1].configure(state="disable")
 
     def bill_cancel(self, *args):
         self.ViewUpdated()
@@ -84,6 +122,9 @@ class BillCreate():
         print('data', self)
 
     def item_changed(self, *args):
+        print(self)
+        
+    def customer_changed(self, *args):
         print(self)
 
     def bill_create(self):
@@ -108,7 +149,12 @@ class BillCreate():
 
         bill.datetime = self.datetime.cget("text")
 
-        db.bill_create(bill)        
+        if(self.id > 0):
+            bill.bill_id = self.id
+            db.bill_update(bill)        
+        else:
+            db.bill_create(bill)        
+            
         self.ViewUpdated()
         messagebox.showinfo('Success!', 'Bill Created Successfully')
 
