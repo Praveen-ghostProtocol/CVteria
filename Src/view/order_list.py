@@ -53,6 +53,9 @@ class OrderList():
         win.submit = tk.Button(win.frame, text='Add Order', command=lambda:self.order_create(win))
         win.submit.grid(row=2, column=0, sticky=tk.N+tk.S+tk.E+tk.W,padx=10,pady=10)
 
+        help = tk.Label(win.frame, text='*Right click to Edit or Delete', background='#CC8066', foreground='white')
+        help.grid(row=3, column=0, sticky=tk.W, pady=5)
+
         tv = self.CreateUI(win.frame)
         
         db = Database()
@@ -76,19 +79,27 @@ class OrderList():
         
     def edit(self):
         print("Edit", self.popup.selection)
+        row = self.popup.row
+        id = self.tv.item(row)['text']
+        if(id == '' or int(id) == 0):
+            messagebox.showerror('Failure!', 'Please select a Row!')
+            return
+        
         helper = ComponentHelper()
         helper.remove_all_widgets(self.win)
         self.win.geometry("1280x785")
-        row = self.popup.row
-        order_header_id = self.tv.item(row)['text']
         self.toolbar(self.win)
-        self.ord_create.createWidgets(self.win, order_header_id)
+        self.ord_create.createWidgets(self.win, id)
         
     def delete(self):        
         row = self.popup.row
-        order_id = self.tv.item(row)['text']
+        id = self.tv.item(row)['text']
+        if(id == '' or int(id) == 0):
+            messagebox.showerror('Failure!', 'Please select a Row!')
+            return
+
         db = Database()
-        bill_exist = db.bill_get_buy_order_header_id(order_id)
+        bill_exist = db.bill_get_buy_order_header_id(id)
         
         
         try:
@@ -96,7 +107,7 @@ class OrderList():
                 messagebox.showerror('Failure!',"Cannot delete order, as there is an existing bill for it!")
                 return
             else:
-                db.order_delete(order_id)
+                db.order_delete(id)
             selected_item = self.tv.selection()[0]    
             self.tv.delete(selected_item)
         except:
@@ -117,7 +128,7 @@ class OrderList():
             self.popup.grab_release()    
 
     def CreateUI(self, win):
-        self.tv = Treeview(win, height=24)
+        self.tv = Treeview(win, height=22)
         
         #Create menu
         self.popup = tk.Menu(win, tearoff=0)
@@ -141,7 +152,7 @@ class OrderList():
         self.tv.heading('Total Amount', text='Total Amount')
         self.tv.column('Total Amount', anchor='center', width=150)
 
-        self.tv.grid(row=3, column=0, sticky = (N,S,W,E))
+        self.tv.grid(row=4, column=0, sticky = (N,S,W,E))
         self.treeview = self.tv
         
         return self.tv

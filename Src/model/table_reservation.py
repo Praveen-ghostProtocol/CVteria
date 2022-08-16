@@ -12,3 +12,4 @@ class TableReservation():
     datetime = 'YYYY-mm-dd HH:MM:ss'
     customer_id = 1
     customer = ''
+    number_of_seats=2

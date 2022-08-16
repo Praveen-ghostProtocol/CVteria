@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import StringVar, messagebox
 
 from datetime import datetime
 from model.bill import Bill
@@ -35,7 +35,7 @@ class BillCreate():
         win.columnconfigure(1, weight=1)
 
         helper = ComponentHelper()
-        win.frame = helper.add_background(win, "./images/bill_add_del2.gif")
+        win.frame = helper.add_background(win, "./images/bill_add_del.gif")
 
         db = Database()
         self.order_header_list = db.order_header_get_upaid()
@@ -89,7 +89,7 @@ class BillCreate():
         if(self.id > 0):
             self.order = helper.create_label_options_menu(win.frame, 0,'Order', order_header_arr, self.order_changed, order_txt)
             self.cust = helper.create_label_options_menu(win.frame, 4,'Customer', cust_arr, self.customer_changed, bill.customer)
-            self.mode_of_payment = helper.create_label_options_menu(win.frame, 5,'Mode Of Payment', payment_mode_arr, self.item_changed, bill.mode_of_payment)
+            self.mode_of_payment = helper.create_label_options_menu(win.frame, 7,'Mode Of Payment', payment_mode_arr, self.item_changed, bill.mode_of_payment)
         else:
             self.order = helper.create_label_options_menu(win.frame, 0,'Order', order_header_arr, self.order_changed)
             self.cust = helper.create_label_options_menu(win.frame, 4,'Customer', cust_arr, self.customer_changed)
@@ -98,17 +98,27 @@ class BillCreate():
         self.table = helper.create_label_label(win.frame, 1,'Table', bill.table_number)
         self.total_amount = helper.create_label_label(win.frame, 2,'Total Amount', bill.total_amount)        
         self.datetime = helper.create_label_label(win.frame, 3, 'DateTime', bill.datetime)
-        self.total_amount = helper.create_label_entry(win.frame, 5,'Discount', bill.discount)
-        self.total_amount = helper.create_label_label(win.frame, 6,'Final Amount', bill.final_amount)
+        
+        self.sv = StringVar()
+        self.discount = helper.create_label_entry(win.frame, 5,'Discount', bill.discount, self.sv, self.discount_changed)
+        self.final_amount = helper.create_label_label(win.frame, 6,'Final Amount', bill.final_amount)
                 
         cancel = tk.Button(win.frame, text='Cancel', command=lambda:self.bill_cancel())
-        cancel.grid(row=7, column=0, sticky=tk.N+tk.S+tk.E+tk.W)
+        cancel.grid(row=8, column=0, sticky=tk.N+tk.S+tk.E+tk.W)
 
         self.submit = tk.Button(win.frame, text='Submit', command=lambda:self.bill_create())
-        self.submit.grid(row=7, column=1, sticky=tk.N+tk.S+tk.E+tk.W)
+        self.submit.grid(row=8, column=1, sticky=tk.N+tk.S+tk.E+tk.W)
 
         if(self.id > 0):
             self.order[1].configure(state="disable")
+
+    def discount_changed(self):
+        print(self.sv.get())
+
+        final_amount = float(self.total_amount.cget("text")) * (1-(float(self.discount.get())/100))
+        self.final_amount.config(text=final_amount)
+
+        return True        
 
     def bill_cancel(self, *args):
         self.ViewUpdated()
@@ -119,6 +129,8 @@ class BillCreate():
         self.table.config(text=args_arr[1])
         self.total_amount.config(text=args_arr[2])
         self.datetime.config(text=args_arr[3])
+        final_amount = float(self.total_amount.cget("text")) * (1-(float(self.discount.get())/100))
+        self.final_amount.config(text=final_amount)
         print('data', self)
 
     def item_changed(self, *args):
@@ -126,6 +138,21 @@ class BillCreate():
         
     def customer_changed(self, *args):
         print(self)
+        for data in self.cust_list:
+            if(data.customer_name == args[0]):
+                dob_month = datetime.strptime(str(data.DOB), '%Y-%m-%d').month
+                dob_date = datetime.strptime(str(data.DOB), '%Y-%m-%d').day
+                
+                bill_month = datetime.strptime(self.datetime.cget("text"), '%Y-%m-%d %H:%M:%S').month
+                bill_date = datetime.strptime(self.datetime.cget("text"), '%Y-%m-%d %H:%M:%S').day
+
+                if(dob_month == bill_month and dob_date == bill_date):
+                    messagebox.showinfo('Success!', 'Wish the Customer Happy Birthday! Added 50% discount to the bill!')        
+                    helper = ComponentHelper()
+                    helper.change_text(self.discount,'50')
+                    final_amount = float(self.total_amount.cget("text")) * (0.50)
+                    self.final_amount.config(text=final_amount)
+                    return
 
     def bill_create(self):
         if self.cust[0].get() == "Please Select":
@@ -148,6 +175,10 @@ class BillCreate():
                 bill.payment_mode_id = data.payment_mode_id
 
         bill.datetime = self.datetime.cget("text")
+        bill.discount = self.discount.get()
+        final_amount = float(self.total_amount.cget("text")) * (1-(float(self.discount.get())/100))
+        self.final_amount.config(text=final_amount)
+        bill.final_amount = final_amount
 
         if(self.id > 0):
             bill.bill_id = self.id

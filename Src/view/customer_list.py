@@ -3,6 +3,7 @@ from tkinter import messagebox
 
 from tkinter import *
 from tkinter.ttk import *
+from turtle import bgcolor
   
 from model.customer import Customer
 from view.helper.comp_helper import ComponentHelper
@@ -50,6 +51,9 @@ class CustomerList():
         win.submit = tk.Button(win.frame, text='Add Customer', command=lambda:self.customer_create(win))
         win.submit.grid(row=2, column=0, sticky=tk.N+tk.S+tk.E+tk.W,padx=10,pady=10)
 
+        help = tk.Label(win.frame, text='*Right click to Edit or Delete', background='#CC8066', foreground='white')
+        help.grid(row=3, column=0, sticky=tk.W, pady=5)
+
         tv = self.CreateUI(win.frame)
         
         db = Database()
@@ -67,17 +71,26 @@ class CustomerList():
     def edit(self):
         print("Edit", self.popup.selection)
 
+        row = self.popup.row
+        cust_id = self.tv.item(row)['text']
+        if(cust_id == '' or int(cust_id) == 0):
+            messagebox.showerror('Failure!', 'Please select a Row!')
+            return
+
         helper = ComponentHelper()
         helper.remove_all_widgets(self.win)
         self.win.geometry("1280x785")
-        row = self.popup.row
-        cust_id = self.tv.item(row)['text']
+                    
         self.toolbar(self.win)
         self.cust_create.createWidgets(self.win, cust_id)
         
     def delete(self):        
         row = self.popup.row
         cust_id = self.tv.item(row)['text']
+        if(cust_id == '' or int(cust_id) == 0):
+            messagebox.showerror('Failure!', 'Please select a Row!')
+            return
+
         db = Database()
         bill_exist = db.bill_get_buy_customer_id(cust_id)       
                 
@@ -110,7 +123,7 @@ class CustomerList():
         tv.insert("", 'end', iid=None, text=cust.customer_id, values=(cust.customer_name, cust.phone_number, cust.gender, cust.email_id, cust.DOB, cust.anniversary_date))
         
     def CreateUI(self, win):
-        self.tv = Treeview(win, height=24)
+        self.tv = Treeview(win, height=22)
 
         #Create menu
         self.popup = tk.Menu(win, tearoff=0)
@@ -143,7 +156,7 @@ class CustomerList():
         self.tv.heading('Anniversary Date', text='Anniversary Date')
         self.tv.column('Anniversary Date', anchor='center', width=100)
 
-        self.tv.grid(row=3, column=0, sticky = (N,S,W,E))
+        self.tv.grid(row=4, column=0, sticky = (N,S,W,E))
         self.treeview = self.tv
         
         return self.tv

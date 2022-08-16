@@ -51,6 +51,9 @@ class BillList():
         win.submit = tk.Button(win.frame, text='Add Bill', command=lambda:self.bill_create(win))
         win.submit.grid(row=2, column=0, sticky=tk.N+tk.S+tk.E+tk.W,padx=10,pady=10)
 
+        help = tk.Label(win.frame, text='*Right click to Edit or Delete', background='#CC8066', foreground='white')
+        help.grid(row=3, column=0, sticky=tk.W, pady=5)
+
         tv = self.CreateUI(win.frame)
         
         db = Database()
@@ -70,30 +73,36 @@ class BillList():
         
     def edit(self):
         print("Edit", self.popup.selection)
+        row = self.popup.row
+        id = self.tv.item(row)['text']
+        if(id == '' or int(id) == 0):
+            messagebox.showerror('Failure!', 'Please select a Row!')
+            return
 
         helper = ComponentHelper()
         helper.remove_all_widgets(self.win)
         self.win.geometry("1280x785")
-        row = self.popup.row
-        id = self.tv.item(row)['text']
         self.toolbar(self.win)
         self.bil_create.createWidgets(self.win, id)
         
     def delete(self):        
-            row = self.popup.row
-            bill_id = self.tv.item(row)['text']
-            db = Database()
-            db.bill_delete(bill_id)
-            
-            try:
-                selected_item = self.tv.selection()[0]    
-                self.tv.delete(selected_item)
-            except:
-                messagebox.showerror('Failure!', 'Please select an Item before Deleting!')
-                return
-            
-            messagebox.showinfo('Success!', 'Bill deleted Successfully')
-            print("Delete", self.popup.selection)
+        row = self.popup.row
+        id = self.tv.item(row)['text']
+        if(id == '' or int(id) == 0):
+            messagebox.showerror('Failure!', 'Please select a Row!')
+            return
+        db = Database()
+        db.bill_delete(id)
+        
+        try:
+            selected_item = self.tv.selection()[0]    
+            self.tv.delete(selected_item)
+        except:
+            messagebox.showerror('Failure!', 'Please select an Item before Deleting!')
+            return
+        
+        messagebox.showinfo('Success!', 'Bill deleted Successfully')
+        print("Delete", self.popup.selection)
 
     def do_popup(self, event):
         # display the popup menu
@@ -106,7 +115,7 @@ class BillList():
             self.popup.grab_release()    
 
     def CreateUI(self, win):
-        self.tv = Treeview(win, height=24)
+        self.tv = Treeview(win, height=22)
 
         #Create menu
         self.popup = tk.Menu(win, tearoff=0)
@@ -128,21 +137,21 @@ class BillList():
         self.tv.column('Table Number', anchor='center', width=100)
 
         self.tv.heading('Total Amount', text='Total Amount')
-        self.tv.column('Total Amount', anchor='center', width=100)
+        self.tv.column('Total Amount', anchor='center', width=75)
         
         self.tv.heading('Discount', text='Discount')
-        self.tv.column('Discount', anchor='center', width=100)
+        self.tv.column('Discount', anchor='center', width=75)
         
         self.tv.heading('Final Amount', text='Final Amount')
-        self.tv.column('Final Amount', anchor='center', width=100)
+        self.tv.column('Final Amount', anchor='center', width=75)
                 
         self.tv.heading('Mode Of Payment', text='Mode Of Payment')
-        self.tv.column('Mode Of Payment', anchor='center', width=100)
+        self.tv.column('Mode Of Payment', anchor='center', width=75)
 
         self.tv.heading('DateTime', text='DateTime')
-        self.tv.column('DateTime', anchor='center', width=150)
+        self.tv.column('DateTime', anchor='center', width=125)
         
-        self.tv.grid(row=3, column=0, sticky = (N,S,W,E))
+        self.tv.grid(row=4, column=0, sticky = (N,S,W,E))
         self.treeview = self.tv
         
         return self.tv

@@ -1,13 +1,14 @@
+from cgitb import text
 import tkinter as tk
 
 class ComponentHelper():
     def __init__(self):
         print('component helper')
 
-    def create_label_entry(self, grid_placeholder, row, txt, val):
+    def create_label_entry(self, grid_placeholder, row, txt, val, sv=object, text_changed=object):
         grid_placeholder.label = tk.Label(grid_placeholder, text = txt,font=('Verdana',10),bg='white',fg='black',padx=5,pady=5, anchor=tk.W)
         grid_placeholder.label.grid(row=row, column=0, sticky=tk.N+tk.S+tk.E+tk.W)
-        grid_placeholder.entry = tk.Entry(grid_placeholder, width=82)
+        grid_placeholder.entry = tk.Entry(grid_placeholder, width=82, textvariable=sv, validate="focusout", validatecommand=text_changed)
         self.change_text(grid_placeholder.entry, val)
         grid_placeholder.entry.grid(row=row, column=1, sticky=tk.N+tk.S+tk.E+tk.W)
         return grid_placeholder.entry

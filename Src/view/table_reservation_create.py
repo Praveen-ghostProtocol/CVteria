@@ -59,6 +59,7 @@ class TableReservationCreate():
             cust_arr.append(data.customer_name)
 
         obj = TableReservation()
+
         db = Database()
         if(id > 0):            
             self.id = id
@@ -72,11 +73,16 @@ class TableReservationCreate():
                 obj.customer_id = data.customer_id
                 obj.customer = data.customer
 
+        for data in self.table_list:
+            if(data.table_number == obj.table_number):
+                obj.location = data.location
+                obj.number_of_seats = data.number_of_seats
+
         helper = ComponentHelper()
         self.customer = helper.create_label_options_menu(win.frame, 0,'Customer', cust_arr, self.item_changed, obj.customer)
         self.table = helper.create_label_options_menu(win.frame, 1,'Table', table_arr, self.table_changed, obj.table_number)
-        self.number_of_seats = helper.create_label_label(win.frame, 2,'Number of Seats', 2)
-        self.location = helper.create_label_label(win.frame, 3,'Location', '')
+        self.number_of_seats = helper.create_label_label(win.frame, 2,'Number of Seats', obj.number_of_seats)
+        self.location = helper.create_label_label(win.frame, 3,'Location', obj.location)
         self.datetime = helper.create_label_entry(win.frame, 4,'DateTime ', obj.datetime)
         self.pax = helper.create_label_entry(win.frame, 5,'Pax', obj.pax)
         

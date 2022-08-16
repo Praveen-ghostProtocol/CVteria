@@ -710,7 +710,7 @@ class Database():
         mydb = self.connect()        
         mycursor = mydb.cursor()
         
-        sql = "insert into bill(cafe_order_header_id,discount,final_amount,customer_id, payment_mode_id, date_time, create_time,update_time) VALUES (%s, %s, %s, %s, now(), now())"
+        sql = "insert into bill(cafe_order_header_id,discount,final_amount,customer_id, payment_mode_id, date_time, create_time,update_time) VALUES (%s, %s, %s, %s, %s, %s, now(), now())"
         val = (bill.cafe_order_header_id, bill.discount,bill.final_amount,bill.customer_id, bill.payment_mode_id, bill.datetime)
         
         mycursor.execute(sql, val)

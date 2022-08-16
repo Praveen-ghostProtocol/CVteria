@@ -48,7 +48,11 @@ class TableReservationList():
         win.submit = tk.Button(win.frame, text='Add Table Reservation', command=lambda:self.table_reservation_create(win))
         win.submit.grid(row=2, column=0, sticky=tk.N+tk.S+tk.E+tk.W,padx=10,pady=10)
 
+        help = tk.Label(win.frame, text='*Right click to Edit or Delete', background='#CC8066', foreground='white')
+        help.grid(row=3, column=0, sticky=tk.W, pady=5)
+
         tv = self.CreateUI(win.frame)
+
         db = Database()
         reserv_list = db.table_reservation_get_all()
         for data in reserv_list:
@@ -70,28 +74,35 @@ class TableReservationList():
 
     def edit(self):
         print("Edit", self.popup.selection)
+        row = self.popup.row
+        id = self.tv.item(row)['text']
+        if(id == '' or int(id) == 0):
+            messagebox.showerror('Failure!', 'Please select a Row!')
+            return
 
         helper = ComponentHelper()
         helper.remove_all_widgets(self.win)
         self.win.geometry("1280x785")
-        row = self.popup.row
-        id = self.tv.item(row)['text']
         self.toolbar(self.win)
         self.tbl_reservation_create.createWidgets(self.win, id)
         
     def delete(self):        
         row = self.popup.row
         id = self.tv.item(row)['text']
+        if(id == '' or int(id) == 0):
+            messagebox.showerror('Failure!', 'Please select a Row!')
+            return
+
         db = Database()
         db.table_reservation_delete(id)
-        
+
         try:
             selected_item = self.tv.selection()[0]    
             self.tv.delete(selected_item)
         except:
             messagebox.showerror('Failure!', 'Please select an Item before Deleting!')
             return
-        
+                
         messagebox.showinfo('Success!', 'Deleted Successfully')
         print("Delete", self.popup.selection)
 
@@ -106,7 +117,7 @@ class TableReservationList():
             self.popup.grab_release()    
         
     def CreateUI(self, win):
-        self.tv = Treeview(win, height=24)
+        self.tv = Treeview(win, height=22)
 
         #Create menu
         self.popup = tk.Menu(win, tearoff=0)
@@ -133,7 +144,7 @@ class TableReservationList():
         self.tv.heading('Customer', text='Customer')
         self.tv.column('Customer', anchor='center', width=200)
 
-        self.tv.grid(row=3, column=0, sticky = (N,S,W,E))
+        self.tv.grid(row=4, column=0, sticky = (N,S,W,E))
         self.treeview = self.tv
         
         return self.tv
